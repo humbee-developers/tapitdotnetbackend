@@ -17,7 +17,8 @@
       "Bash(dotnet build *)",
       "Bash(dotnet ef *)",
       "Bash(dotnet add *)",
-      "PowerShell($env:ASPNETCORE_ENVIRONMENT = \"Production\"; dotnet ef database update --project \"src/TapitAI.Infrastructure\" --startup-project \"src/TapitAI.API\" 2>&1)"
+      "PowerShell($env:ASPNETCORE_ENVIRONMENT = \"Production\"; dotnet ef database update --project \"src/TapitAI.Infrastructure\" --startup-project \"src/TapitAI.API\" 2>&1)",
+      "Bash(dir src\\\\TapitAI.API\\\\TapitAI.API.csproj)"
     ],
     "additionalDirectories": [
       "C:\\Users\\Patel\\.claude\\projects\\e--Humbee-Studio-Clients-VagKap-tapitAI-dotnetbackend"

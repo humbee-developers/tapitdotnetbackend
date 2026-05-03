@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 using TapitAI.API.Extensions;
 using TapitAI.API.Middleware;
 using TapitAI.Application;
@@ -54,7 +55,20 @@ static async Task SeedDatabaseAsync(WebApplication app)
     using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-    // Ensure PostGIS extension exists before migration
+    // Create database if it doesn't exist, then enable PostGIS
+    var connStr = db.Database.GetConnectionString()!;
+    var builder = new NpgsqlConnectionStringBuilder(connStr);
+    var dbName = builder.Database;
+    builder.Database = "postgres";
+    await using (var adminConn = new NpgsqlConnection(builder.ConnectionString))
+    {
+        await adminConn.OpenAsync();
+        var exists = await new NpgsqlCommand(
+            $"SELECT 1 FROM pg_database WHERE datname = '{dbName}'", adminConn)
+            .ExecuteScalarAsync();
+        if (exists is null)
+            await new NpgsqlCommand($"CREATE DATABASE \"{dbName}\"", adminConn).ExecuteNonQueryAsync();
+    }
     await db.Database.ExecuteSqlRawAsync("CREATE EXTENSION IF NOT EXISTS postgis;");
     await db.Database.MigrateAsync();
 
