@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/TapitAI.API/TapitAI.API.csproj" />
+    <Project Path="src/TapitAI.Application/TapitAI.Application.csproj" />
+    <Project Path="src/TapitAI.Domain/TapitAI.Domain.csproj" />
+    <Project Path="src/TapitAI.Infrastructure/TapitAI.Infrastructure.csproj" />
+  </Folder>
+</Solution>

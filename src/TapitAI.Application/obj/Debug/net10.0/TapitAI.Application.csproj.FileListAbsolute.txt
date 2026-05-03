@@ -1,0 +1,15 @@
+e:\Humbee Studio\Clients\VagKap\tapitAI\dotnetbackend\src\TapitAI.Application\obj\Debug\net10.0\TapitAI.Application.csproj.AssemblyReference.cache
+e:\Humbee Studio\Clients\VagKap\tapitAI\dotnetbackend\src\TapitAI.Application\obj\Debug\net10.0\TapitAI.Application.GeneratedMSBuildEditorConfig.editorconfig
+e:\Humbee Studio\Clients\VagKap\tapitAI\dotnetbackend\src\TapitAI.Application\obj\Debug\net10.0\TapitAI.Application.AssemblyInfoInputs.cache
+e:\Humbee Studio\Clients\VagKap\tapitAI\dotnetbackend\src\TapitAI.Application\obj\Debug\net10.0\TapitAI.Application.AssemblyInfo.cs
+e:\Humbee Studio\Clients\VagKap\tapitAI\dotnetbackend\src\TapitAI.Application\obj\Debug\net10.0\TapitAI.Application.csproj.CoreCompileInputs.cache
+e:\Humbee Studio\Clients\VagKap\tapitAI\dotnetbackend\src\TapitAI.Application\bin\Debug\net10.0\TapitAI.Application.deps.json
+e:\Humbee Studio\Clients\VagKap\tapitAI\dotnetbackend\src\TapitAI.Application\bin\Debug\net10.0\TapitAI.Application.dll
+e:\Humbee Studio\Clients\VagKap\tapitAI\dotnetbackend\src\TapitAI.Application\bin\Debug\net10.0\TapitAI.Application.pdb
+e:\Humbee Studio\Clients\VagKap\tapitAI\dotnetbackend\src\TapitAI.Application\bin\Debug\net10.0\TapitAI.Domain.dll
+e:\Humbee Studio\Clients\VagKap\tapitAI\dotnetbackend\src\TapitAI.Application\bin\Debug\net10.0\TapitAI.Domain.pdb
+e:\Humbee Studio\Clients\VagKap\tapitAI\dotnetbackend\src\TapitAI.Application\obj\Debug\net10.0\TapitAI..43C18F16.Up2Date
+e:\Humbee Studio\Clients\VagKap\tapitAI\dotnetbackend\src\TapitAI.Application\obj\Debug\net10.0\TapitAI.Application.dll
+e:\Humbee Studio\Clients\VagKap\tapitAI\dotnetbackend\src\TapitAI.Application\obj\Debug\net10.0\refint\TapitAI.Application.dll
+e:\Humbee Studio\Clients\VagKap\tapitAI\dotnetbackend\src\TapitAI.Application\obj\Debug\net10.0\TapitAI.Application.pdb
+e:\Humbee Studio\Clients\VagKap\tapitAI\dotnetbackend\src\TapitAI.Application\obj\Debug\net10.0\ref\TapitAI.Application.dll

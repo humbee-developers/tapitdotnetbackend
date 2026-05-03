@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(dotnet sln \"e:\\\\Humbee Studio\\\\Clients\\\\VagKap\\\\tapitAI\\\\dotnetbackend\\\\TapitAI.Backend.slnx\" add \"e:\\\\Humbee Studio\\\\Clients\\\\VagKap\\\\tapitAI\\\\dotnetbackend\\\\src\\\\TapitAI.Domain\\\\TapitAI.Domain.csproj\")",
+      "PowerShell(dotnet sln \"e:\\\\Humbee Studio\\\\Clients\\\\VagKap\\\\tapitAI\\\\dotnetbackend\\\\TapitAI.Backend.slnx\" add \"e:\\\\Humbee Studio\\\\Clients\\\\VagKap\\\\tapitAI\\\\dotnetbackend\\\\src\\\\TapitAI.Application\\\\TapitAI.Application.csproj\")",
+      "PowerShell(dotnet sln \"e:\\\\Humbee Studio\\\\Clients\\\\VagKap\\\\tapitAI\\\\dotnetbackend\\\\TapitAI.Backend.slnx\" add \"e:\\\\Humbee Studio\\\\Clients\\\\VagKap\\\\tapitAI\\\\dotnetbackend\\\\src\\\\TapitAI.Infrastructure\\\\TapitAI.Infrastructure.csproj\")",
+      "PowerShell(dotnet sln \"e:\\\\Humbee Studio\\\\Clients\\\\VagKap\\\\tapitAI\\\\dotnetbackend\\\\TapitAI.Backend.slnx\" add \"e:\\\\Humbee Studio\\\\Clients\\\\VagKap\\\\tapitAI\\\\dotnetbackend\\\\src\\\\TapitAI.API\\\\TapitAI.API.csproj\")",
+      "PowerShell(dotnet add $api package Swashbuckle.AspNetCore)",
+      "PowerShell(dotnet add $api package Microsoft.AspNetCore.Authentication.JwtBearer)",
+      "PowerShell($api = \"e:\\\\Humbee Studio\\\\Clients\\\\VagKap\\\\tapitAI\\\\dotnetbackend\\\\src\\\\TapitAI.API\\\\TapitAI.API.csproj\")",
+      "PowerShell(dotnet build \"e:\\\\Humbee Studio\\\\Clients\\\\VagKap\\\\tapitAI\\\\dotnetbackend\\\\TapitAI.Backend.slnx\" 2>&1)",
+      "PowerShell(dotnet build \"e:\\\\Humbee Studio\\\\Clients\\\\VagKap\\\\tapitAI\\\\dotnetbackend\\\\TapitAI.Backend.slnx\" 2>&1 | Where-Object { $_ -match \"error|warning NU|Build \" } | Select-Object -Last 30)",
+      "PowerShell(dotnet build \"e:\\\\Humbee Studio\\\\Clients\\\\VagKap\\\\tapitAI\\\\dotnetbackend\\\\TapitAI.Backend.slnx\" 2>&1 | Where-Object { $_ -match \"error CS|Build \" } | Select-Object -Last 20)",
+      "Read(//c/Users/Patel/.nuget/packages/stream-chat-net/2.20.0/lib/net6.0/**)",
+      "Read(//c/Users/Patel/.nuget/packages/swashbuckle.aspnetcore/10.1.7/**)"
+    ]
+  }
+}
