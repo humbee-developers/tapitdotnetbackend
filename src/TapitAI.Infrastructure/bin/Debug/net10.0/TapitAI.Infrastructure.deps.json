@@ -10,6 +10,7 @@
         "dependencies": {
           "AWSSDK.S3": "4.0.22.1",
           "CloudinaryDotNet": "1.29.0",
+          "FirebaseAdmin": "3.1.0",
           "Google.Cloud.Storage.V1": "4.14.0",
           "Microsoft.AspNetCore.Authentication.JwtBearer": "10.0.7",
           "Microsoft.AspNetCore.Identity.EntityFrameworkCore": "10.0.7",
@@ -17,6 +18,7 @@
           "Microsoft.EntityFrameworkCore.Tools": "10.0.7",
           "Microsoft.Extensions.Caching.StackExchangeRedis": "10.0.7",
           "Npgsql.EntityFrameworkCore.PostgreSQL": "10.0.1",
+          "Npgsql.EntityFrameworkCore.PostgreSQL.NetTopologySuite": "10.0.1",
           "StackExchange.Redis": "2.12.14",
           "System.IdentityModel.Tokens.Jwt": "8.18.0",
           "TapitAI.Application": "1.0.0",
@@ -76,6 +78,18 @@
           "lib/netstandard2.0/CloudinaryDotNet.dll": {
             "assemblyVersion": "1.29.0.0",
             "fileVersion": "1.29.0.0"
+          }
+        }
+      },
+      "FirebaseAdmin/3.1.0": {
+        "dependencies": {
+          "Google.Api.Gax.Rest": "4.12.1",
+          "Google.Apis.Auth": "1.72.0"
+        },
+        "runtime": {
+          "lib/net6.0/FirebaseAdmin.dll": {
+            "assemblyVersion": "3.1.0.0",
+            "fileVersion": "3.1.0.0"
           }
         }
       },
@@ -594,6 +608,25 @@
           }
         }
       },
+      "NetTopologySuite/2.6.0": {
+        "runtime": {
+          "lib/netstandard2.1/NetTopologySuite.dll": {
+            "assemblyVersion": "2.0.0.0",
+            "fileVersion": "2.0.0.0"
+          }
+        }
+      },
+      "NetTopologySuite.IO.PostGis/2.1.0": {
+        "dependencies": {
+          "NetTopologySuite": "2.6.0"
+        },
+        "runtime": {
+          "lib/netstandard2.1/NetTopologySuite.IO.PostGis.dll": {
+            "assemblyVersion": "2.0.0.0",
+            "fileVersion": "2.0.0.0"
+          }
+        }
+      },
       "Newtonsoft.Json/13.0.4": {
         "runtime": {
           "lib/net6.0/Newtonsoft.Json.dll": {
@@ -620,6 +653,31 @@
           "lib/net10.0/Npgsql.EntityFrameworkCore.PostgreSQL.dll": {
             "assemblyVersion": "10.0.1.0",
             "fileVersion": "10.0.1.0"
+          }
+        }
+      },
+      "Npgsql.EntityFrameworkCore.PostgreSQL.NetTopologySuite/10.0.1": {
+        "dependencies": {
+          "Npgsql.EntityFrameworkCore.PostgreSQL": "10.0.1",
+          "Npgsql.NetTopologySuite": "10.0.2"
+        },
+        "runtime": {
+          "lib/net10.0/Npgsql.EntityFrameworkCore.PostgreSQL.NetTopologySuite.dll": {
+            "assemblyVersion": "10.0.1.0",
+            "fileVersion": "10.0.1.0"
+          }
+        }
+      },
+      "Npgsql.NetTopologySuite/10.0.2": {
+        "dependencies": {
+          "NetTopologySuite": "2.6.0",
+          "NetTopologySuite.IO.PostGis": "2.1.0",
+          "Npgsql": "10.0.2"
+        },
+        "runtime": {
+          "lib/net8.0/Npgsql.NetTopologySuite.dll": {
+            "assemblyVersion": "10.0.2.0",
+            "fileVersion": "10.0.2.0"
           }
         }
       },
@@ -768,6 +826,7 @@
           "FluentValidation": "12.1.1",
           "FluentValidation.DependencyInjectionExtensions": "12.1.1",
           "MediatR": "14.1.0",
+          "Microsoft.EntityFrameworkCore": "10.0.7",
           "TapitAI.Domain": "1.0.0"
         },
         "runtime": {
@@ -778,6 +837,9 @@
         }
       },
       "TapitAI.Domain/1.0.0": {
+        "dependencies": {
+          "NetTopologySuite": "2.6.0"
+        },
         "runtime": {
           "TapitAI.Domain.dll": {
             "assemblyVersion": "1.0.0.0",
@@ -827,6 +889,13 @@
       "sha512": "sha512-z1Y9NvD2k5QxEtU5kF//G0f9RtpwHHijPpix9CMeI0tJv4/yTfYZoJ7ONTLQFSlv4Gkmo05wh+Uno0S72hX71g==",
       "path": "cloudinarydotnet/1.29.0",
       "hashPath": "cloudinarydotnet.1.29.0.nupkg.sha512"
+    },
+    "FirebaseAdmin/3.1.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-QNafwBg5psTGKOIyo78sNYjJ9GI5z/TPqOgpyOOv+2nzeK8sVaIPT2eDpcgzpxcRcKbjISbel38cQH/pIHNeOA==",
+      "path": "firebaseadmin/3.1.0",
+      "hashPath": "firebaseadmin.3.1.0.nupkg.sha512"
     },
     "FluentValidation/12.1.1": {
       "type": "package",
@@ -1059,6 +1128,20 @@
       "path": "mono.texttemplating/2.2.1",
       "hashPath": "mono.texttemplating.2.2.1.nupkg.sha512"
     },
+    "NetTopologySuite/2.6.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-1B1OTacTd4QtFyBeuIOcThwSSLUdRZU3bSFIwM8vk36XiZlBMi3K36u74e4OqwwHRHUuJC1PhbDx4hyI266X1Q==",
+      "path": "nettopologysuite/2.6.0",
+      "hashPath": "nettopologysuite.2.6.0.nupkg.sha512"
+    },
+    "NetTopologySuite.IO.PostGis/2.1.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-3W8XTFz8iP6GQ5jDXK1/LANHiU+988k1kmmuPWNKcJLpmSg6CvFpbTpz+s4+LBzkAp64wHGOldSlkSuzYfrIKA==",
+      "path": "nettopologysuite.io.postgis/2.1.0",
+      "hashPath": "nettopologysuite.io.postgis.2.1.0.nupkg.sha512"
+    },
     "Newtonsoft.Json/13.0.4": {
       "type": "package",
       "serviceable": true,
@@ -1079,6 +1162,20 @@
       "sha512": "sha512-P6EwH0Q4xkaA264iNZDqCPhWt8pscfUGxXazDQg4noBfqjoOlk4hKWfvBjF9ZX3R/9JybRmmJfmxr2iBMj0EpA==",
       "path": "npgsql.entityframeworkcore.postgresql/10.0.1",
       "hashPath": "npgsql.entityframeworkcore.postgresql.10.0.1.nupkg.sha512"
+    },
+    "Npgsql.EntityFrameworkCore.PostgreSQL.NetTopologySuite/10.0.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-Fcx8k5cSF7cGeXMeguLwyV+wTcKbmhojCse2WBXfHlEQNXILpI1My7H6rvPT8n3fI4TxZiYq/LWO2vVGBD3FHA==",
+      "path": "npgsql.entityframeworkcore.postgresql.nettopologysuite/10.0.1",
+      "hashPath": "npgsql.entityframeworkcore.postgresql.nettopologysuite.10.0.1.nupkg.sha512"
+    },
+    "Npgsql.NetTopologySuite/10.0.2": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-WNM5ZHATFj0dSMJ/4vlbgMWBgP0ElMwsGiHR0PwzwflNS+IXbX8xxNZyLp4veCLcr5tDCWwMh9Lw7nwUxWkzvg==",
+      "path": "npgsql.nettopologysuite/10.0.2",
+      "hashPath": "npgsql.nettopologysuite.10.0.2.nupkg.sha512"
     },
     "Pipelines.Sockets.Unofficial/2.2.8": {
       "type": "package",

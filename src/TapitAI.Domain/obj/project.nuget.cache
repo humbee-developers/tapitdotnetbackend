@@ -1,8 +1,10 @@
 {
   "version": 2,
-  "dgSpecHash": "JFZDKxZ0fkU=",
+  "dgSpecHash": "Qzz+osm1Os4=",
   "success": true,
-  "projectFilePath": "e:\\Humbee Studio\\Clients\\VagKap\\tapitAI\\dotnetbackend\\src\\TapitAI.Domain\\TapitAI.Domain.csproj",
-  "expectedPackageFiles": [],
+  "projectFilePath": "E:\\Humbee Studio\\Clients\\VagKap\\tapitAI\\dotnetbackend\\src\\TapitAI.Domain\\TapitAI.Domain.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\Patel\\.nuget\\packages\\nettopologysuite\\2.5.0\\nettopologysuite.2.5.0.nupkg.sha512"
+  ],
   "logs": []
 }

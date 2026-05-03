@@ -14,13 +14,18 @@ using TapitAI.Domain.Interfaces.Services;
 using TapitAI.Infrastructure.BackgroundServices;
 using TapitAI.Infrastructure.Data;
 using TapitAI.Infrastructure.Data.Interceptors;
+using TapitAI.Infrastructure.Hubs;
 using TapitAI.Infrastructure.Identity;
 using TapitAI.Infrastructure.Repositories;
 using TapitAI.Infrastructure.Services;
 using TapitAI.Infrastructure.Services.Cache;
 using TapitAI.Infrastructure.Services.Chat;
+using TapitAI.Infrastructure.Services.Discovery;
+using TapitAI.Infrastructure.Services.Firebase;
 using TapitAI.Infrastructure.Services.Media;
 using TapitAI.Infrastructure.Services.Media.Providers;
+using TapitAI.Infrastructure.Services.RealTime;
+using TapitAI.Infrastructure.Services.Settings;
 using TapitAI.Infrastructure.Settings;
 
 namespace TapitAI.Infrastructure;
@@ -38,6 +43,8 @@ public static class DependencyInjection
         services.AddStorageProviders(configuration);
         services.AddChatServices();
         services.AddCaching(configuration);
+        services.AddSignalR();
+        services.AddDatingServices();
         services.AddBackgroundServices();
 
         return services;
@@ -61,7 +68,11 @@ public static class DependencyInjection
         {
             options.UseNpgsql(
                 configuration.GetConnectionString("DefaultConnection"),
-                npgsql => npgsql.MigrationsAssembly(typeof(AppDbContext).Assembly.FullName));
+                npgsql =>
+                {
+                    npgsql.MigrationsAssembly(typeof(AppDbContext).Assembly.FullName);
+                    npgsql.UseNetTopologySuite();
+                });
         });
     }
 
@@ -118,28 +129,30 @@ public static class DependencyInjection
                 ValidAudience = auth0Settings.Audience,
                 ValidateLifetime = true
             };
+            // Allow SignalR WebSocket auth via query string token
+            options.Events = new JwtBearerEvents
+            {
+                OnMessageReceived = context =>
+                {
+                    var accessToken = context.Request.Query["access_token"];
+                    var path = context.HttpContext.Request.Path;
+                    if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs"))
+                        context.Token = accessToken;
+                    return Task.CompletedTask;
+                }
+            };
         })
         .AddPolicyScheme("MultiScheme", "MultiScheme", options =>
         {
-            options.ForwardDefaultSelector = context =>
-            {
-                var authHeader = context.Request.Headers.Authorization.FirstOrDefault();
-                if (authHeader is null) return "Auth0";
-
-                // Check issuer claim to route to correct scheme
-                // Admin tokens are issued locally; Auth0 tokens come from Auth0 domain
-                return "Auth0";
-            };
+            options.ForwardDefaultSelector = _ => "Auth0";
         });
 
         services.AddAuthorization(options =>
         {
             options.AddPolicy("AdminOnly", policy =>
                 policy.RequireRole("Admin").AddAuthenticationSchemes("Admin"));
-
             options.AddPolicy("UserOnly", policy =>
                 policy.RequireRole("User").AddAuthenticationSchemes("Auth0"));
-
             options.AddPolicy("AdminOrUser", policy =>
                 policy.RequireAuthenticatedUser().AddAuthenticationSchemes("Admin", "Auth0"));
         });
@@ -164,7 +177,6 @@ public static class DependencyInjection
     {
         var storageSettings = configuration.GetSection(StorageSettings.SectionName).Get<StorageSettings>()!;
 
-        // Register S3 client
         services.AddSingleton<IAmazonS3>(_ =>
         {
             var s3 = storageSettings.S3;
@@ -173,11 +185,9 @@ public static class DependencyInjection
             return new AmazonS3Client(credentials, config);
         });
 
-        // Register all storage providers
         services.AddSingleton<IStorageProvider, S3StorageProvider>();
         services.AddSingleton<IStorageProvider, CloudinaryStorageProvider>();
         services.AddSingleton<IStorageProvider, GoogleStorageProvider>();
-
         services.AddSingleton<MediaStorageFactory>();
         services.AddScoped<IMediaStorageService, MediaStorageService>();
     }
@@ -198,10 +208,22 @@ public static class DependencyInjection
         });
 
         services.AddScoped<ICacheService, RedisCacheService>();
+        services.AddScoped<IAdminSettingService, AdminSettingService>();
+    }
+
+    private static void AddDatingServices(this IServiceCollection services)
+    {
+        services.AddScoped<IDiscoveryService, DiscoveryService>();
+        services.AddScoped<IFirebaseService, FirebaseService>();
+        services.AddScoped<IRealTimeService, SignalRNotificationService>();
     }
 
     private static void AddBackgroundServices(this IServiceCollection services)
     {
         services.AddHostedService<SampleBackgroundService>();
+        services.AddHostedService<TapStatusResetBackgroundService>();
+        services.AddHostedService<ConnectionExpiryBackgroundService>();
+        services.AddHostedService<SpotlightGenerationBackgroundService>();
+        services.AddHostedService<SystemConnectionBackgroundService>();
     }
 }

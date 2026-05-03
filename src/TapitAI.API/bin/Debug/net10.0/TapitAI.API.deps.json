@@ -9,6 +9,7 @@
       "TapitAI.API/1.0.0": {
         "dependencies": {
           "Microsoft.AspNetCore.Authentication.JwtBearer": "10.0.7",
+          "Microsoft.EntityFrameworkCore.Design": "10.0.7",
           "Swashbuckle.AspNetCore": "6.9.0",
           "TapitAI.Application": "1.0.0",
           "TapitAI.Infrastructure": "1.0.0"
@@ -66,6 +67,18 @@
           "lib/netstandard2.0/CloudinaryDotNet.dll": {
             "assemblyVersion": "1.29.0.0",
             "fileVersion": "1.29.0.0"
+          }
+        }
+      },
+      "FirebaseAdmin/3.1.0": {
+        "dependencies": {
+          "Google.Api.Gax.Rest": "4.12.1",
+          "Google.Apis.Auth": "1.72.0"
+        },
+        "runtime": {
+          "lib/net6.0/FirebaseAdmin.dll": {
+            "assemblyVersion": "3.1.0.0",
+            "fileVersion": "3.1.0.0"
           }
         }
       },
@@ -171,6 +184,14 @@
           }
         }
       },
+      "Humanizer.Core/2.14.1": {
+        "runtime": {
+          "lib/net6.0/Humanizer.dll": {
+            "assemblyVersion": "2.14.0.0",
+            "fileVersion": "2.14.1.48190"
+          }
+        }
+      },
       "MediatR/14.1.0": {
         "dependencies": {
           "MediatR.Contracts": "2.0.1",
@@ -221,6 +242,286 @@
           }
         }
       },
+      "Microsoft.Build.Framework/18.0.2": {
+        "runtime": {
+          "lib/net10.0/Microsoft.Build.Framework.dll": {
+            "assemblyVersion": "15.1.0.0",
+            "fileVersion": "18.0.2.52102"
+          }
+        }
+      },
+      "Microsoft.CodeAnalysis.Common/5.0.0": {
+        "runtime": {
+          "lib/net9.0/Microsoft.CodeAnalysis.dll": {
+            "assemblyVersion": "5.0.0.0",
+            "fileVersion": "5.0.25.56712"
+          }
+        },
+        "resources": {
+          "lib/net9.0/cs/Microsoft.CodeAnalysis.resources.dll": {
+            "locale": "cs"
+          },
+          "lib/net9.0/de/Microsoft.CodeAnalysis.resources.dll": {
+            "locale": "de"
+          },
+          "lib/net9.0/es/Microsoft.CodeAnalysis.resources.dll": {
+            "locale": "es"
+          },
+          "lib/net9.0/fr/Microsoft.CodeAnalysis.resources.dll": {
+            "locale": "fr"
+          },
+          "lib/net9.0/it/Microsoft.CodeAnalysis.resources.dll": {
+            "locale": "it"
+          },
+          "lib/net9.0/ja/Microsoft.CodeAnalysis.resources.dll": {
+            "locale": "ja"
+          },
+          "lib/net9.0/ko/Microsoft.CodeAnalysis.resources.dll": {
+            "locale": "ko"
+          },
+          "lib/net9.0/pl/Microsoft.CodeAnalysis.resources.dll": {
+            "locale": "pl"
+          },
+          "lib/net9.0/pt-BR/Microsoft.CodeAnalysis.resources.dll": {
+            "locale": "pt-BR"
+          },
+          "lib/net9.0/ru/Microsoft.CodeAnalysis.resources.dll": {
+            "locale": "ru"
+          },
+          "lib/net9.0/tr/Microsoft.CodeAnalysis.resources.dll": {
+            "locale": "tr"
+          },
+          "lib/net9.0/zh-Hans/Microsoft.CodeAnalysis.resources.dll": {
+            "locale": "zh-Hans"
+          },
+          "lib/net9.0/zh-Hant/Microsoft.CodeAnalysis.resources.dll": {
+            "locale": "zh-Hant"
+          }
+        }
+      },
+      "Microsoft.CodeAnalysis.CSharp/5.0.0": {
+        "dependencies": {
+          "Microsoft.CodeAnalysis.Common": "5.0.0"
+        },
+        "runtime": {
+          "lib/net9.0/Microsoft.CodeAnalysis.CSharp.dll": {
+            "assemblyVersion": "5.0.0.0",
+            "fileVersion": "5.0.25.56712"
+          }
+        },
+        "resources": {
+          "lib/net9.0/cs/Microsoft.CodeAnalysis.CSharp.resources.dll": {
+            "locale": "cs"
+          },
+          "lib/net9.0/de/Microsoft.CodeAnalysis.CSharp.resources.dll": {
+            "locale": "de"
+          },
+          "lib/net9.0/es/Microsoft.CodeAnalysis.CSharp.resources.dll": {
+            "locale": "es"
+          },
+          "lib/net9.0/fr/Microsoft.CodeAnalysis.CSharp.resources.dll": {
+            "locale": "fr"
+          },
+          "lib/net9.0/it/Microsoft.CodeAnalysis.CSharp.resources.dll": {
+            "locale": "it"
+          },
+          "lib/net9.0/ja/Microsoft.CodeAnalysis.CSharp.resources.dll": {
+            "locale": "ja"
+          },
+          "lib/net9.0/ko/Microsoft.CodeAnalysis.CSharp.resources.dll": {
+            "locale": "ko"
+          },
+          "lib/net9.0/pl/Microsoft.CodeAnalysis.CSharp.resources.dll": {
+            "locale": "pl"
+          },
+          "lib/net9.0/pt-BR/Microsoft.CodeAnalysis.CSharp.resources.dll": {
+            "locale": "pt-BR"
+          },
+          "lib/net9.0/ru/Microsoft.CodeAnalysis.CSharp.resources.dll": {
+            "locale": "ru"
+          },
+          "lib/net9.0/tr/Microsoft.CodeAnalysis.CSharp.resources.dll": {
+            "locale": "tr"
+          },
+          "lib/net9.0/zh-Hans/Microsoft.CodeAnalysis.CSharp.resources.dll": {
+            "locale": "zh-Hans"
+          },
+          "lib/net9.0/zh-Hant/Microsoft.CodeAnalysis.CSharp.resources.dll": {
+            "locale": "zh-Hant"
+          }
+        }
+      },
+      "Microsoft.CodeAnalysis.CSharp.Workspaces/5.0.0": {
+        "dependencies": {
+          "Humanizer.Core": "2.14.1",
+          "Microsoft.CodeAnalysis.CSharp": "5.0.0",
+          "Microsoft.CodeAnalysis.Common": "5.0.0",
+          "Microsoft.CodeAnalysis.Workspaces.Common": "5.0.0",
+          "System.Composition": "9.0.0"
+        },
+        "runtime": {
+          "lib/net9.0/Microsoft.CodeAnalysis.CSharp.Workspaces.dll": {
+            "assemblyVersion": "5.0.0.0",
+            "fileVersion": "5.0.25.56712"
+          }
+        },
+        "resources": {
+          "lib/net9.0/cs/Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll": {
+            "locale": "cs"
+          },
+          "lib/net9.0/de/Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll": {
+            "locale": "de"
+          },
+          "lib/net9.0/es/Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll": {
+            "locale": "es"
+          },
+          "lib/net9.0/fr/Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll": {
+            "locale": "fr"
+          },
+          "lib/net9.0/it/Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll": {
+            "locale": "it"
+          },
+          "lib/net9.0/ja/Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll": {
+            "locale": "ja"
+          },
+          "lib/net9.0/ko/Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll": {
+            "locale": "ko"
+          },
+          "lib/net9.0/pl/Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll": {
+            "locale": "pl"
+          },
+          "lib/net9.0/pt-BR/Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll": {
+            "locale": "pt-BR"
+          },
+          "lib/net9.0/ru/Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll": {
+            "locale": "ru"
+          },
+          "lib/net9.0/tr/Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll": {
+            "locale": "tr"
+          },
+          "lib/net9.0/zh-Hans/Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll": {
+            "locale": "zh-Hans"
+          },
+          "lib/net9.0/zh-Hant/Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll": {
+            "locale": "zh-Hant"
+          }
+        }
+      },
+      "Microsoft.CodeAnalysis.Workspaces.Common/5.0.0": {
+        "dependencies": {
+          "Humanizer.Core": "2.14.1",
+          "Microsoft.CodeAnalysis.Common": "5.0.0",
+          "System.Composition": "9.0.0"
+        },
+        "runtime": {
+          "lib/net9.0/Microsoft.CodeAnalysis.Workspaces.dll": {
+            "assemblyVersion": "5.0.0.0",
+            "fileVersion": "5.0.25.56712"
+          }
+        },
+        "resources": {
+          "lib/net9.0/cs/Microsoft.CodeAnalysis.Workspaces.resources.dll": {
+            "locale": "cs"
+          },
+          "lib/net9.0/de/Microsoft.CodeAnalysis.Workspaces.resources.dll": {
+            "locale": "de"
+          },
+          "lib/net9.0/es/Microsoft.CodeAnalysis.Workspaces.resources.dll": {
+            "locale": "es"
+          },
+          "lib/net9.0/fr/Microsoft.CodeAnalysis.Workspaces.resources.dll": {
+            "locale": "fr"
+          },
+          "lib/net9.0/it/Microsoft.CodeAnalysis.Workspaces.resources.dll": {
+            "locale": "it"
+          },
+          "lib/net9.0/ja/Microsoft.CodeAnalysis.Workspaces.resources.dll": {
+            "locale": "ja"
+          },
+          "lib/net9.0/ko/Microsoft.CodeAnalysis.Workspaces.resources.dll": {
+            "locale": "ko"
+          },
+          "lib/net9.0/pl/Microsoft.CodeAnalysis.Workspaces.resources.dll": {
+            "locale": "pl"
+          },
+          "lib/net9.0/pt-BR/Microsoft.CodeAnalysis.Workspaces.resources.dll": {
+            "locale": "pt-BR"
+          },
+          "lib/net9.0/ru/Microsoft.CodeAnalysis.Workspaces.resources.dll": {
+            "locale": "ru"
+          },
+          "lib/net9.0/tr/Microsoft.CodeAnalysis.Workspaces.resources.dll": {
+            "locale": "tr"
+          },
+          "lib/net9.0/zh-Hans/Microsoft.CodeAnalysis.Workspaces.resources.dll": {
+            "locale": "zh-Hans"
+          },
+          "lib/net9.0/zh-Hant/Microsoft.CodeAnalysis.Workspaces.resources.dll": {
+            "locale": "zh-Hant"
+          }
+        }
+      },
+      "Microsoft.CodeAnalysis.Workspaces.MSBuild/5.0.0": {
+        "dependencies": {
+          "Humanizer.Core": "2.14.1",
+          "Microsoft.Build.Framework": "18.0.2",
+          "Microsoft.CodeAnalysis.Workspaces.Common": "5.0.0",
+          "Microsoft.VisualStudio.SolutionPersistence": "1.0.52",
+          "Newtonsoft.Json": "13.0.4",
+          "System.Composition": "9.0.0"
+        },
+        "runtime": {
+          "lib/net9.0/Microsoft.CodeAnalysis.ExternalAccess.RazorCompiler.dll": {
+            "assemblyVersion": "5.0.0.0",
+            "fileVersion": "5.0.25.56712"
+          },
+          "lib/net9.0/Microsoft.CodeAnalysis.Workspaces.MSBuild.dll": {
+            "assemblyVersion": "5.0.0.0",
+            "fileVersion": "5.0.25.56712"
+          }
+        },
+        "resources": {
+          "lib/net9.0/cs/Microsoft.CodeAnalysis.Workspaces.MSBuild.resources.dll": {
+            "locale": "cs"
+          },
+          "lib/net9.0/de/Microsoft.CodeAnalysis.Workspaces.MSBuild.resources.dll": {
+            "locale": "de"
+          },
+          "lib/net9.0/es/Microsoft.CodeAnalysis.Workspaces.MSBuild.resources.dll": {
+            "locale": "es"
+          },
+          "lib/net9.0/fr/Microsoft.CodeAnalysis.Workspaces.MSBuild.resources.dll": {
+            "locale": "fr"
+          },
+          "lib/net9.0/it/Microsoft.CodeAnalysis.Workspaces.MSBuild.resources.dll": {
+            "locale": "it"
+          },
+          "lib/net9.0/ja/Microsoft.CodeAnalysis.Workspaces.MSBuild.resources.dll": {
+            "locale": "ja"
+          },
+          "lib/net9.0/ko/Microsoft.CodeAnalysis.Workspaces.MSBuild.resources.dll": {
+            "locale": "ko"
+          },
+          "lib/net9.0/pl/Microsoft.CodeAnalysis.Workspaces.MSBuild.resources.dll": {
+            "locale": "pl"
+          },
+          "lib/net9.0/pt-BR/Microsoft.CodeAnalysis.Workspaces.MSBuild.resources.dll": {
+            "locale": "pt-BR"
+          },
+          "lib/net9.0/ru/Microsoft.CodeAnalysis.Workspaces.MSBuild.resources.dll": {
+            "locale": "ru"
+          },
+          "lib/net9.0/tr/Microsoft.CodeAnalysis.Workspaces.MSBuild.resources.dll": {
+            "locale": "tr"
+          },
+          "lib/net9.0/zh-Hans/Microsoft.CodeAnalysis.Workspaces.MSBuild.resources.dll": {
+            "locale": "zh-Hans"
+          },
+          "lib/net9.0/zh-Hant/Microsoft.CodeAnalysis.Workspaces.MSBuild.resources.dll": {
+            "locale": "zh-Hant"
+          }
+        }
+      },
       "Microsoft.EntityFrameworkCore/10.0.7": {
         "dependencies": {
           "Microsoft.EntityFrameworkCore.Abstractions": "10.0.7"
@@ -235,6 +536,25 @@
       "Microsoft.EntityFrameworkCore.Abstractions/10.0.7": {
         "runtime": {
           "lib/net10.0/Microsoft.EntityFrameworkCore.Abstractions.dll": {
+            "assemblyVersion": "10.0.7.0",
+            "fileVersion": "10.0.726.21808"
+          }
+        }
+      },
+      "Microsoft.EntityFrameworkCore.Design/10.0.7": {
+        "dependencies": {
+          "Humanizer.Core": "2.14.1",
+          "Microsoft.Build.Framework": "18.0.2",
+          "Microsoft.CodeAnalysis.CSharp": "5.0.0",
+          "Microsoft.CodeAnalysis.CSharp.Workspaces": "5.0.0",
+          "Microsoft.CodeAnalysis.Workspaces.MSBuild": "5.0.0",
+          "Microsoft.EntityFrameworkCore.Relational": "10.0.7",
+          "Microsoft.Extensions.DependencyModel": "10.0.7",
+          "Mono.TextTemplating": "3.0.0",
+          "Newtonsoft.Json": "13.0.4"
+        },
+        "runtime": {
+          "lib/net10.0/Microsoft.EntityFrameworkCore.Design.dll": {
             "assemblyVersion": "10.0.7.0",
             "fileVersion": "10.0.726.21808"
           }
@@ -258,6 +578,14 @@
         "runtime": {
           "lib/net10.0/Microsoft.Extensions.Caching.StackExchangeRedis.dll": {
             "assemblyVersion": "10.0.7.0",
+            "fileVersion": "10.0.726.21808"
+          }
+        }
+      },
+      "Microsoft.Extensions.DependencyModel/10.0.7": {
+        "runtime": {
+          "lib/net10.0/Microsoft.Extensions.DependencyModel.dll": {
+            "assemblyVersion": "10.0.0.7",
             "fileVersion": "10.0.726.21808"
           }
         }
@@ -334,6 +662,44 @@
           }
         }
       },
+      "Microsoft.VisualStudio.SolutionPersistence/1.0.52": {
+        "runtime": {
+          "lib/net8.0/Microsoft.VisualStudio.SolutionPersistence.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.52.6595"
+          }
+        }
+      },
+      "Mono.TextTemplating/3.0.0": {
+        "dependencies": {
+          "System.CodeDom": "7.0.0"
+        },
+        "runtime": {
+          "lib/net6.0/Mono.TextTemplating.dll": {
+            "assemblyVersion": "3.0.0.0",
+            "fileVersion": "3.0.0.1"
+          }
+        }
+      },
+      "NetTopologySuite/2.6.0": {
+        "runtime": {
+          "lib/netstandard2.1/NetTopologySuite.dll": {
+            "assemblyVersion": "2.0.0.0",
+            "fileVersion": "2.0.0.0"
+          }
+        }
+      },
+      "NetTopologySuite.IO.PostGis/2.1.0": {
+        "dependencies": {
+          "NetTopologySuite": "2.6.0"
+        },
+        "runtime": {
+          "lib/netstandard2.1/NetTopologySuite.IO.PostGis.dll": {
+            "assemblyVersion": "2.0.0.0",
+            "fileVersion": "2.0.0.0"
+          }
+        }
+      },
       "Newtonsoft.Json/13.0.4": {
         "runtime": {
           "lib/net6.0/Newtonsoft.Json.dll": {
@@ -360,6 +726,31 @@
           "lib/net10.0/Npgsql.EntityFrameworkCore.PostgreSQL.dll": {
             "assemblyVersion": "10.0.1.0",
             "fileVersion": "10.0.1.0"
+          }
+        }
+      },
+      "Npgsql.EntityFrameworkCore.PostgreSQL.NetTopologySuite/10.0.1": {
+        "dependencies": {
+          "Npgsql.EntityFrameworkCore.PostgreSQL": "10.0.1",
+          "Npgsql.NetTopologySuite": "10.0.2"
+        },
+        "runtime": {
+          "lib/net10.0/Npgsql.EntityFrameworkCore.PostgreSQL.NetTopologySuite.dll": {
+            "assemblyVersion": "10.0.1.0",
+            "fileVersion": "10.0.1.0"
+          }
+        }
+      },
+      "Npgsql.NetTopologySuite/10.0.2": {
+        "dependencies": {
+          "NetTopologySuite": "2.6.0",
+          "NetTopologySuite.IO.PostGis": "2.1.0",
+          "Npgsql": "10.0.2"
+        },
+        "runtime": {
+          "lib/net8.0/Npgsql.NetTopologySuite.dll": {
+            "assemblyVersion": "10.0.2.0",
+            "fileVersion": "10.0.2.0"
           }
         }
       },
@@ -439,6 +830,66 @@
           }
         }
       },
+      "System.Composition/9.0.0": {
+        "dependencies": {
+          "System.Composition.AttributedModel": "9.0.0",
+          "System.Composition.Convention": "9.0.0",
+          "System.Composition.Hosting": "9.0.0",
+          "System.Composition.Runtime": "9.0.0",
+          "System.Composition.TypedParts": "9.0.0"
+        }
+      },
+      "System.Composition.AttributedModel/9.0.0": {
+        "runtime": {
+          "lib/net9.0/System.Composition.AttributedModel.dll": {
+            "assemblyVersion": "9.0.0.0",
+            "fileVersion": "9.0.24.52809"
+          }
+        }
+      },
+      "System.Composition.Convention/9.0.0": {
+        "dependencies": {
+          "System.Composition.AttributedModel": "9.0.0"
+        },
+        "runtime": {
+          "lib/net9.0/System.Composition.Convention.dll": {
+            "assemblyVersion": "9.0.0.0",
+            "fileVersion": "9.0.24.52809"
+          }
+        }
+      },
+      "System.Composition.Hosting/9.0.0": {
+        "dependencies": {
+          "System.Composition.Runtime": "9.0.0"
+        },
+        "runtime": {
+          "lib/net9.0/System.Composition.Hosting.dll": {
+            "assemblyVersion": "9.0.0.0",
+            "fileVersion": "9.0.24.52809"
+          }
+        }
+      },
+      "System.Composition.Runtime/9.0.0": {
+        "runtime": {
+          "lib/net9.0/System.Composition.Runtime.dll": {
+            "assemblyVersion": "9.0.0.0",
+            "fileVersion": "9.0.24.52809"
+          }
+        }
+      },
+      "System.Composition.TypedParts/9.0.0": {
+        "dependencies": {
+          "System.Composition.AttributedModel": "9.0.0",
+          "System.Composition.Hosting": "9.0.0",
+          "System.Composition.Runtime": "9.0.0"
+        },
+        "runtime": {
+          "lib/net9.0/System.Composition.TypedParts.dll": {
+            "assemblyVersion": "9.0.0.0",
+            "fileVersion": "9.0.24.52809"
+          }
+        }
+      },
       "System.IdentityModel.Tokens.Jwt/8.18.0": {
         "dependencies": {
           "Microsoft.IdentityModel.JsonWebTokens": "8.18.0",
@@ -485,6 +936,7 @@
           "FluentValidation": "12.1.1",
           "FluentValidation.DependencyInjectionExtensions": "12.1.1",
           "MediatR": "14.1.0",
+          "Microsoft.EntityFrameworkCore": "10.0.7",
           "TapitAI.Domain": "1.0.0"
         },
         "runtime": {
@@ -495,6 +947,9 @@
         }
       },
       "TapitAI.Domain/1.0.0": {
+        "dependencies": {
+          "NetTopologySuite": "2.6.0"
+        },
         "runtime": {
           "TapitAI.Domain.dll": {
             "assemblyVersion": "1.0.0.0",
@@ -506,12 +961,14 @@
         "dependencies": {
           "AWSSDK.S3": "4.0.22.1",
           "CloudinaryDotNet": "1.29.0",
+          "FirebaseAdmin": "3.1.0",
           "Google.Cloud.Storage.V1": "4.14.0",
           "Microsoft.AspNetCore.Authentication.JwtBearer": "10.0.7",
           "Microsoft.AspNetCore.Identity.EntityFrameworkCore": "10.0.7",
           "Microsoft.EntityFrameworkCore": "10.0.7",
           "Microsoft.Extensions.Caching.StackExchangeRedis": "10.0.7",
           "Npgsql.EntityFrameworkCore.PostgreSQL": "10.0.1",
+          "Npgsql.EntityFrameworkCore.PostgreSQL.NetTopologySuite": "10.0.1",
           "StackExchange.Redis": "2.12.14",
           "System.IdentityModel.Tokens.Jwt": "8.18.0",
           "TapitAI.Application": "1.0.0",
@@ -567,6 +1024,13 @@
       "sha512": "sha512-z1Y9NvD2k5QxEtU5kF//G0f9RtpwHHijPpix9CMeI0tJv4/yTfYZoJ7ONTLQFSlv4Gkmo05wh+Uno0S72hX71g==",
       "path": "cloudinarydotnet/1.29.0",
       "hashPath": "cloudinarydotnet.1.29.0.nupkg.sha512"
+    },
+    "FirebaseAdmin/3.1.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-QNafwBg5psTGKOIyo78sNYjJ9GI5z/TPqOgpyOOv+2nzeK8sVaIPT2eDpcgzpxcRcKbjISbel38cQH/pIHNeOA==",
+      "path": "firebaseadmin/3.1.0",
+      "hashPath": "firebaseadmin.3.1.0.nupkg.sha512"
     },
     "FluentValidation/12.1.1": {
       "type": "package",
@@ -631,6 +1095,13 @@
       "path": "google.cloud.storage.v1/4.14.0",
       "hashPath": "google.cloud.storage.v1.4.14.0.nupkg.sha512"
     },
+    "Humanizer.Core/2.14.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-lQKvtaTDOXnoVJ20ibTuSIOf2i0uO0MPbDhd1jm238I+U/2ZnRENj0cktKZhtchBMtCUSRQ5v4xBCUbKNmyVMw==",
+      "path": "humanizer.core/2.14.1",
+      "hashPath": "humanizer.core.2.14.1.nupkg.sha512"
+    },
     "MediatR/14.1.0": {
       "type": "package",
       "serviceable": true,
@@ -666,6 +1137,48 @@
       "path": "microsoft.bcl.asyncinterfaces/6.0.0",
       "hashPath": "microsoft.bcl.asyncinterfaces.6.0.0.nupkg.sha512"
     },
+    "Microsoft.Build.Framework/18.0.2": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-sOSb+0J4G/jCBW/YqmRuL0eOMXgfw1KQLdC9TkbvfA5xs7uNm+PBQXJCOzSJGXtZcZrtXozcwxPmUiRUbmd7FA==",
+      "path": "microsoft.build.framework/18.0.2",
+      "hashPath": "microsoft.build.framework.18.0.2.nupkg.sha512"
+    },
+    "Microsoft.CodeAnalysis.Common/5.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-ZXRAdvH6GiDeHRyd3q/km8Z44RoM6FBWHd+gen/la81mVnAdHTEsEkO5J0TCNXBymAcx5UYKt5TvgKBhaLJEow==",
+      "path": "microsoft.codeanalysis.common/5.0.0",
+      "hashPath": "microsoft.codeanalysis.common.5.0.0.nupkg.sha512"
+    },
+    "Microsoft.CodeAnalysis.CSharp/5.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-5DSyJ9bk+ATuDy7fp2Zt0mJStDVKbBoiz1DyfAwSa+k4H4IwykAUcV3URelw5b8/iVbfSaOwkwmPUZH6opZKCw==",
+      "path": "microsoft.codeanalysis.csharp/5.0.0",
+      "hashPath": "microsoft.codeanalysis.csharp.5.0.0.nupkg.sha512"
+    },
+    "Microsoft.CodeAnalysis.CSharp.Workspaces/5.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-Al/Q8B+yO8odSqGVpSvrShMFDvlQdIBU//F3E6Rb0YdiLSALE9wh/pvozPNnfmh5HDnvU+mkmSjpz4hQO++jaA==",
+      "path": "microsoft.codeanalysis.csharp.workspaces/5.0.0",
+      "hashPath": "microsoft.codeanalysis.csharp.workspaces.5.0.0.nupkg.sha512"
+    },
+    "Microsoft.CodeAnalysis.Workspaces.Common/5.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-ZbUmIvT6lqTNKiv06Jl5wf0MTMi1vQ1oH7ou4CLcs2C/no/L7EhP3T8y3XXvn9VbqMcJaJnEsNA1jwYUMgc5jg==",
+      "path": "microsoft.codeanalysis.workspaces.common/5.0.0",
+      "hashPath": "microsoft.codeanalysis.workspaces.common.5.0.0.nupkg.sha512"
+    },
+    "Microsoft.CodeAnalysis.Workspaces.MSBuild/5.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-/G+LVoAGMz6Ae8nm+PGLxSw+F5RjYx/J7irbTO5uKAPw1bxHyQJLc/YOnpDxt+EpPtYxvC9wvBsg/kETZp1F9Q==",
+      "path": "microsoft.codeanalysis.workspaces.msbuild/5.0.0",
+      "hashPath": "microsoft.codeanalysis.workspaces.msbuild.5.0.0.nupkg.sha512"
+    },
     "Microsoft.EntityFrameworkCore/10.0.7": {
       "type": "package",
       "serviceable": true,
@@ -680,6 +1193,13 @@
       "path": "microsoft.entityframeworkcore.abstractions/10.0.7",
       "hashPath": "microsoft.entityframeworkcore.abstractions.10.0.7.nupkg.sha512"
     },
+    "Microsoft.EntityFrameworkCore.Design/10.0.7": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-8UMWkJdfwN/tyEZS6zd0s55zE5zaG4owldh+E91vXitHmux3FTP6Hjhgk6RL9Sv+TdO4FMERQIT6VzBtRrb1AQ==",
+      "path": "microsoft.entityframeworkcore.design/10.0.7",
+      "hashPath": "microsoft.entityframeworkcore.design.10.0.7.nupkg.sha512"
+    },
     "Microsoft.EntityFrameworkCore.Relational/10.0.7": {
       "type": "package",
       "serviceable": true,
@@ -693,6 +1213,13 @@
       "sha512": "sha512-TvD0totA8qeyrZ2YeY/qRNgYBy4BvO6dG59ziJDLVnLH4s2jeLUFEFcgA3xzqPhCMMbuz9bJTRwHxkZ/7c87jQ==",
       "path": "microsoft.extensions.caching.stackexchangeredis/10.0.7",
       "hashPath": "microsoft.extensions.caching.stackexchangeredis.10.0.7.nupkg.sha512"
+    },
+    "Microsoft.Extensions.DependencyModel/10.0.7": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-gCglFg/9Chu3lyJNytRuQAYM3mXQKNs1i01Cz2bc545QaHQ+LbBb4O5UCfu968Gro3ZVSOZ/ktilmPcaUSGSZA==",
+      "path": "microsoft.extensions.dependencymodel/10.0.7",
+      "hashPath": "microsoft.extensions.dependencymodel.10.0.7.nupkg.sha512"
     },
     "Microsoft.IdentityModel.Abstractions/8.18.0": {
       "type": "package",
@@ -743,6 +1270,34 @@
       "path": "microsoft.openapi/1.6.14",
       "hashPath": "microsoft.openapi.1.6.14.nupkg.sha512"
     },
+    "Microsoft.VisualStudio.SolutionPersistence/1.0.52": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-oNv2JtYXhpdJrX63nibx1JT3uCESOBQ1LAk7Dtz/sr0+laW0KRM6eKp4CZ3MHDR2siIkKsY8MmUkeP5DKkQQ5w==",
+      "path": "microsoft.visualstudio.solutionpersistence/1.0.52",
+      "hashPath": "microsoft.visualstudio.solutionpersistence.1.0.52.nupkg.sha512"
+    },
+    "Mono.TextTemplating/3.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-YqueG52R/Xej4VVbKuRIodjiAhV0HR/XVbLbNrJhCZnzjnSjgMJ/dCdV0akQQxavX6hp/LC6rqLGLcXeQYU7XA==",
+      "path": "mono.texttemplating/3.0.0",
+      "hashPath": "mono.texttemplating.3.0.0.nupkg.sha512"
+    },
+    "NetTopologySuite/2.6.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-1B1OTacTd4QtFyBeuIOcThwSSLUdRZU3bSFIwM8vk36XiZlBMi3K36u74e4OqwwHRHUuJC1PhbDx4hyI266X1Q==",
+      "path": "nettopologysuite/2.6.0",
+      "hashPath": "nettopologysuite.2.6.0.nupkg.sha512"
+    },
+    "NetTopologySuite.IO.PostGis/2.1.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-3W8XTFz8iP6GQ5jDXK1/LANHiU+988k1kmmuPWNKcJLpmSg6CvFpbTpz+s4+LBzkAp64wHGOldSlkSuzYfrIKA==",
+      "path": "nettopologysuite.io.postgis/2.1.0",
+      "hashPath": "nettopologysuite.io.postgis.2.1.0.nupkg.sha512"
+    },
     "Newtonsoft.Json/13.0.4": {
       "type": "package",
       "serviceable": true,
@@ -763,6 +1318,20 @@
       "sha512": "sha512-P6EwH0Q4xkaA264iNZDqCPhWt8pscfUGxXazDQg4noBfqjoOlk4hKWfvBjF9ZX3R/9JybRmmJfmxr2iBMj0EpA==",
       "path": "npgsql.entityframeworkcore.postgresql/10.0.1",
       "hashPath": "npgsql.entityframeworkcore.postgresql.10.0.1.nupkg.sha512"
+    },
+    "Npgsql.EntityFrameworkCore.PostgreSQL.NetTopologySuite/10.0.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-Fcx8k5cSF7cGeXMeguLwyV+wTcKbmhojCse2WBXfHlEQNXILpI1My7H6rvPT8n3fI4TxZiYq/LWO2vVGBD3FHA==",
+      "path": "npgsql.entityframeworkcore.postgresql.nettopologysuite/10.0.1",
+      "hashPath": "npgsql.entityframeworkcore.postgresql.nettopologysuite.10.0.1.nupkg.sha512"
+    },
+    "Npgsql.NetTopologySuite/10.0.2": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-WNM5ZHATFj0dSMJ/4vlbgMWBgP0ElMwsGiHR0PwzwflNS+IXbX8xxNZyLp4veCLcr5tDCWwMh9Lw7nwUxWkzvg==",
+      "path": "npgsql.nettopologysuite/10.0.2",
+      "hashPath": "npgsql.nettopologysuite.10.0.2.nupkg.sha512"
     },
     "Pipelines.Sockets.Unofficial/2.2.8": {
       "type": "package",
@@ -819,6 +1388,48 @@
       "sha512": "sha512-GLltyqEsE5/3IE+zYRP5sNa1l44qKl9v+bfdMcwg+M9qnQf47wK3H0SUR/T+3N4JEQXF3vV4CSuuo0rsg+nq2A==",
       "path": "system.codedom/7.0.0",
       "hashPath": "system.codedom.7.0.0.nupkg.sha512"
+    },
+    "System.Composition/9.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-3Djj70fFTraOarSKmRnmRy/zm4YurICm+kiCtI0dYRqGJnLX6nJ+G3WYuFJ173cAPax/gh96REcbNiVqcrypFQ==",
+      "path": "system.composition/9.0.0",
+      "hashPath": "system.composition.9.0.0.nupkg.sha512"
+    },
+    "System.Composition.AttributedModel/9.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-iri00l/zIX9g4lHMY+Nz0qV1n40+jFYAmgsaiNn16xvt2RDwlqByNG4wgblagnDYxm3YSQQ0jLlC/7Xlk9CzyA==",
+      "path": "system.composition.attributedmodel/9.0.0",
+      "hashPath": "system.composition.attributedmodel.9.0.0.nupkg.sha512"
+    },
+    "System.Composition.Convention/9.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-+vuqVP6xpi582XIjJi6OCsIxuoTZfR0M7WWufk3uGDeCl3wGW6KnpylUJ3iiXdPByPE0vR5TjJgR6hDLez4FQg==",
+      "path": "system.composition.convention/9.0.0",
+      "hashPath": "system.composition.convention.9.0.0.nupkg.sha512"
+    },
+    "System.Composition.Hosting/9.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-OFqSeFeJYr7kHxDfaViGM1ymk7d4JxK//VSoNF9Ux0gpqkLsauDZpu89kTHHNdCWfSljbFcvAafGyBoY094btQ==",
+      "path": "system.composition.hosting/9.0.0",
+      "hashPath": "system.composition.hosting.9.0.0.nupkg.sha512"
+    },
+    "System.Composition.Runtime/9.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-w1HOlQY1zsOWYussjFGZCEYF2UZXgvoYnS94NIu2CBnAGMbXFAX8PY8c92KwUItPmowal68jnVLBCzdrWLeEKA==",
+      "path": "system.composition.runtime/9.0.0",
+      "hashPath": "system.composition.runtime.9.0.0.nupkg.sha512"
+    },
+    "System.Composition.TypedParts/9.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-aRZlojCCGEHDKqh43jaDgaVpYETsgd7Nx4g1zwLKMtv4iTo0627715ajEFNpEEBTgLmvZuv8K0EVxc3sM4NWJA==",
+      "path": "system.composition.typedparts/9.0.0",
+      "hashPath": "system.composition.typedparts.9.0.0.nupkg.sha512"
     },
     "System.IdentityModel.Tokens.Jwt/8.18.0": {
       "type": "package",

@@ -78,6 +78,23 @@
           }
         }
       },
+      "FirebaseAdmin/3.1.0": {
+        "type": "package",
+        "dependencies": {
+          "Google.Api.Gax.Rest": "4.8.0",
+          "Google.Apis.Auth": "1.68.0"
+        },
+        "compile": {
+          "lib/net6.0/FirebaseAdmin.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net6.0/FirebaseAdmin.dll": {
+            "related": ".xml"
+          }
+        }
+      },
       "FluentValidation/12.1.1": {
         "type": "package",
         "compile": {
@@ -1137,6 +1154,35 @@
           "lib/netstandard2.0/Mono.TextTemplating.dll": {}
         }
       },
+      "NetTopologySuite/2.6.0": {
+        "type": "package",
+        "compile": {
+          "lib/netstandard2.1/NetTopologySuite.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/netstandard2.1/NetTopologySuite.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "NetTopologySuite.IO.PostGis/2.1.0": {
+        "type": "package",
+        "dependencies": {
+          "NetTopologySuite": "[2.0.0, 3.0.0-A)"
+        },
+        "compile": {
+          "lib/netstandard2.1/NetTopologySuite.IO.PostGis.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/netstandard2.1/NetTopologySuite.IO.PostGis.dll": {
+            "related": ".xml"
+          }
+        }
+      },
       "Newtonsoft.Json/13.0.4": {
         "type": "package",
         "compile": {
@@ -1180,6 +1226,44 @@
         },
         "runtime": {
           "lib/net10.0/Npgsql.EntityFrameworkCore.PostgreSQL.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "Npgsql.EntityFrameworkCore.PostgreSQL.NetTopologySuite/10.0.1": {
+        "type": "package",
+        "dependencies": {
+          "Npgsql.EntityFrameworkCore.PostgreSQL": "10.0.1",
+          "Npgsql.NetTopologySuite": "10.0.2"
+        },
+        "compile": {
+          "lib/net10.0/Npgsql.EntityFrameworkCore.PostgreSQL.NetTopologySuite.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0/Npgsql.EntityFrameworkCore.PostgreSQL.NetTopologySuite.dll": {
+            "related": ".xml"
+          }
+        },
+        "build": {
+          "build/netstandard2.0/Npgsql.EntityFrameworkCore.PostgreSQL.NetTopologySuite.targets": {}
+        }
+      },
+      "Npgsql.NetTopologySuite/10.0.2": {
+        "type": "package",
+        "dependencies": {
+          "NetTopologySuite": "2.6.0",
+          "NetTopologySuite.IO.PostGIS": "2.1.0",
+          "Npgsql": "10.0.2"
+        },
+        "compile": {
+          "lib/net8.0/Npgsql.NetTopologySuite.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/Npgsql.NetTopologySuite.dll": {
             "related": ".xml"
           }
         }
@@ -1418,8 +1502,7 @@
           "FluentValidation": "12.1.1",
           "FluentValidation.DependencyInjectionExtensions": "12.1.1",
           "MediatR": "14.1.0",
-          "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.7",
-          "Microsoft.Extensions.Logging.Abstractions": "10.0.7",
+          "Microsoft.EntityFrameworkCore": "10.0.7",
           "TapitAI.Domain": "1.0.0"
         },
         "compile": {
@@ -1427,11 +1510,17 @@
         },
         "runtime": {
           "bin/placeholder/TapitAI.Application.dll": {}
-        }
+        },
+        "frameworkReferences": [
+          "Microsoft.AspNetCore.App"
+        ]
       },
       "TapitAI.Domain/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v10.0",
+        "dependencies": {
+          "NetTopologySuite": "2.5.0"
+        },
         "compile": {
           "bin/placeholder/TapitAI.Domain.dll": {}
         },
@@ -1544,6 +1633,24 @@
         "lib/netstandard1.3/CloudinaryDotNet.xml",
         "lib/netstandard2.0/CloudinaryDotNet.dll",
         "lib/netstandard2.0/CloudinaryDotNet.xml"
+      ]
+    },
+    "FirebaseAdmin/3.1.0": {
+      "sha512": "QNafwBg5psTGKOIyo78sNYjJ9GI5z/TPqOgpyOOv+2nzeK8sVaIPT2eDpcgzpxcRcKbjISbel38cQH/pIHNeOA==",
+      "type": "package",
+      "path": "firebaseadmin/3.1.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "README.md",
+        "firebaseadmin.3.1.0.nupkg.sha512",
+        "firebaseadmin.nuspec",
+        "lib/net462/FirebaseAdmin.dll",
+        "lib/net462/FirebaseAdmin.xml",
+        "lib/net6.0/FirebaseAdmin.dll",
+        "lib/net6.0/FirebaseAdmin.xml",
+        "lib/netstandard2.0/FirebaseAdmin.dll",
+        "lib/netstandard2.0/FirebaseAdmin.xml"
       ]
     },
     "FluentValidation/12.1.1": {
@@ -3132,6 +3239,37 @@
         "mono.texttemplating.nuspec"
       ]
     },
+    "NetTopologySuite/2.6.0": {
+      "sha512": "1B1OTacTd4QtFyBeuIOcThwSSLUdRZU3bSFIwM8vk36XiZlBMi3K36u74e4OqwwHRHUuJC1PhbDx4hyI266X1Q==",
+      "type": "package",
+      "path": "nettopologysuite/2.6.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "icon.png",
+        "lib/netstandard2.0/NetTopologySuite.dll",
+        "lib/netstandard2.0/NetTopologySuite.xml",
+        "lib/netstandard2.1/NetTopologySuite.dll",
+        "lib/netstandard2.1/NetTopologySuite.xml",
+        "nettopologysuite.2.6.0.nupkg.sha512",
+        "nettopologysuite.nuspec"
+      ]
+    },
+    "NetTopologySuite.IO.PostGis/2.1.0": {
+      "sha512": "3W8XTFz8iP6GQ5jDXK1/LANHiU+988k1kmmuPWNKcJLpmSg6CvFpbTpz+s4+LBzkAp64wHGOldSlkSuzYfrIKA==",
+      "type": "package",
+      "path": "nettopologysuite.io.postgis/2.1.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "lib/netstandard2.0/NetTopologySuite.IO.PostGis.dll",
+        "lib/netstandard2.0/NetTopologySuite.IO.PostGis.xml",
+        "lib/netstandard2.1/NetTopologySuite.IO.PostGis.dll",
+        "lib/netstandard2.1/NetTopologySuite.IO.PostGis.xml",
+        "nettopologysuite.io.postgis.2.1.0.nupkg.sha512",
+        "nettopologysuite.io.postgis.nuspec"
+      ]
+    },
     "Newtonsoft.Json/13.0.4": {
       "sha512": "pdgNNMai3zv51W5aq268sujXUyx7SNdE2bj1wZcWjAQrKMFZV260lbqYop1d2GM67JI1huLRwxo9ZqnfF/lC6A==",
       "type": "package",
@@ -3193,6 +3331,37 @@
         "lib/net10.0/Npgsql.EntityFrameworkCore.PostgreSQL.xml",
         "npgsql.entityframeworkcore.postgresql.10.0.1.nupkg.sha512",
         "npgsql.entityframeworkcore.postgresql.nuspec",
+        "postgresql.png"
+      ]
+    },
+    "Npgsql.EntityFrameworkCore.PostgreSQL.NetTopologySuite/10.0.1": {
+      "sha512": "Fcx8k5cSF7cGeXMeguLwyV+wTcKbmhojCse2WBXfHlEQNXILpI1My7H6rvPT8n3fI4TxZiYq/LWO2vVGBD3FHA==",
+      "type": "package",
+      "path": "npgsql.entityframeworkcore.postgresql.nettopologysuite/10.0.1",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "README.md",
+        "build/netstandard2.0/Npgsql.EntityFrameworkCore.PostgreSQL.NetTopologySuite.targets",
+        "lib/net10.0/Npgsql.EntityFrameworkCore.PostgreSQL.NetTopologySuite.dll",
+        "lib/net10.0/Npgsql.EntityFrameworkCore.PostgreSQL.NetTopologySuite.xml",
+        "npgsql.entityframeworkcore.postgresql.nettopologysuite.10.0.1.nupkg.sha512",
+        "npgsql.entityframeworkcore.postgresql.nettopologysuite.nuspec",
+        "postgresql.png"
+      ]
+    },
+    "Npgsql.NetTopologySuite/10.0.2": {
+      "sha512": "WNM5ZHATFj0dSMJ/4vlbgMWBgP0ElMwsGiHR0PwzwflNS+IXbX8xxNZyLp4veCLcr5tDCWwMh9Lw7nwUxWkzvg==",
+      "type": "package",
+      "path": "npgsql.nettopologysuite/10.0.2",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "README.md",
+        "lib/net8.0/Npgsql.NetTopologySuite.dll",
+        "lib/net8.0/Npgsql.NetTopologySuite.xml",
+        "npgsql.nettopologysuite.10.0.2.nupkg.sha512",
+        "npgsql.nettopologysuite.nuspec",
         "postgresql.png"
       ]
     },
@@ -3532,6 +3701,7 @@
     "net10.0": [
       "AWSSDK.S3 >= 4.0.22.1",
       "CloudinaryDotNet >= 1.29.0",
+      "FirebaseAdmin >= 3.1.0",
       "Google.Cloud.Storage.V1 >= 4.14.0",
       "Microsoft.AspNetCore.Authentication.JwtBearer >= 10.0.7",
       "Microsoft.AspNetCore.Identity.EntityFrameworkCore >= 10.0.7",
@@ -3539,6 +3709,7 @@
       "Microsoft.EntityFrameworkCore.Tools >= 10.0.7",
       "Microsoft.Extensions.Caching.StackExchangeRedis >= 10.0.7",
       "Npgsql.EntityFrameworkCore.PostgreSQL >= 10.0.1",
+      "Npgsql.EntityFrameworkCore.PostgreSQL.NetTopologySuite >= 10.0.1",
       "StackExchange.Redis >= 2.12.14",
       "System.IdentityModel.Tokens.Jwt >= 8.18.0",
       "TapitAI.Application >= 1.0.0",
@@ -3553,11 +3724,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "e:\\Humbee Studio\\Clients\\VagKap\\tapitAI\\dotnetbackend\\src\\TapitAI.Infrastructure\\TapitAI.Infrastructure.csproj",
+      "projectUniqueName": "E:\\Humbee Studio\\Clients\\VagKap\\tapitAI\\dotnetbackend\\src\\TapitAI.Infrastructure\\TapitAI.Infrastructure.csproj",
       "projectName": "TapitAI.Infrastructure",
-      "projectPath": "e:\\Humbee Studio\\Clients\\VagKap\\tapitAI\\dotnetbackend\\src\\TapitAI.Infrastructure\\TapitAI.Infrastructure.csproj",
+      "projectPath": "E:\\Humbee Studio\\Clients\\VagKap\\tapitAI\\dotnetbackend\\src\\TapitAI.Infrastructure\\TapitAI.Infrastructure.csproj",
       "packagesPath": "C:\\Users\\Patel\\.nuget\\packages\\",
-      "outputPath": "e:\\Humbee Studio\\Clients\\VagKap\\tapitAI\\dotnetbackend\\src\\TapitAI.Infrastructure\\obj\\",
+      "outputPath": "E:\\Humbee Studio\\Clients\\VagKap\\tapitAI\\dotnetbackend\\src\\TapitAI.Infrastructure\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -3578,11 +3749,11 @@
         "net10.0": {
           "targetAlias": "net10.0",
           "projectReferences": {
-            "e:\\Humbee Studio\\Clients\\VagKap\\tapitAI\\dotnetbackend\\src\\TapitAI.Application\\TapitAI.Application.csproj": {
-              "projectPath": "e:\\Humbee Studio\\Clients\\VagKap\\tapitAI\\dotnetbackend\\src\\TapitAI.Application\\TapitAI.Application.csproj"
+            "E:\\Humbee Studio\\Clients\\VagKap\\tapitAI\\dotnetbackend\\src\\TapitAI.Application\\TapitAI.Application.csproj": {
+              "projectPath": "E:\\Humbee Studio\\Clients\\VagKap\\tapitAI\\dotnetbackend\\src\\TapitAI.Application\\TapitAI.Application.csproj"
             },
-            "e:\\Humbee Studio\\Clients\\VagKap\\tapitAI\\dotnetbackend\\src\\TapitAI.Domain\\TapitAI.Domain.csproj": {
-              "projectPath": "e:\\Humbee Studio\\Clients\\VagKap\\tapitAI\\dotnetbackend\\src\\TapitAI.Domain\\TapitAI.Domain.csproj"
+            "E:\\Humbee Studio\\Clients\\VagKap\\tapitAI\\dotnetbackend\\src\\TapitAI.Domain\\TapitAI.Domain.csproj": {
+              "projectPath": "E:\\Humbee Studio\\Clients\\VagKap\\tapitAI\\dotnetbackend\\src\\TapitAI.Domain\\TapitAI.Domain.csproj"
             }
           }
         }
@@ -3611,6 +3782,10 @@
             "target": "Package",
             "version": "[1.29.0, )"
           },
+          "FirebaseAdmin": {
+            "target": "Package",
+            "version": "[3.1.0, )"
+          },
           "Google.Cloud.Storage.V1": {
             "target": "Package",
             "version": "[4.14.0, )"
@@ -3638,6 +3813,10 @@
             "version": "[10.0.7, )"
           },
           "Npgsql.EntityFrameworkCore.PostgreSQL": {
+            "target": "Package",
+            "version": "[10.0.1, )"
+          },
+          "Npgsql.EntityFrameworkCore.PostgreSQL.NetTopologySuite": {
             "target": "Package",
             "version": "[10.0.1, )"
           },

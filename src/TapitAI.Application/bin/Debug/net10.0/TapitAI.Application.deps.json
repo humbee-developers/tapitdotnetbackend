@@ -13,8 +13,7 @@
           "FluentValidation": "12.1.1",
           "FluentValidation.DependencyInjectionExtensions": "12.1.1",
           "MediatR": "14.1.0",
-          "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.7",
-          "Microsoft.Extensions.Logging.Abstractions": "10.0.7",
+          "Microsoft.EntityFrameworkCore": "10.0.7",
           "TapitAI.Domain": "1.0.0"
         },
         "runtime": {
@@ -23,8 +22,6 @@
       },
       "AutoMapper/16.1.1": {
         "dependencies": {
-          "Microsoft.Extensions.Logging.Abstractions": "10.0.7",
-          "Microsoft.Extensions.Options": "10.0.0",
           "Microsoft.IdentityModel.JsonWebTokens": "8.14.0"
         },
         "runtime": {
@@ -36,8 +33,7 @@
       },
       "AutoMapper.Extensions.Microsoft.DependencyInjection/12.0.1": {
         "dependencies": {
-          "AutoMapper": "16.1.1",
-          "Microsoft.Extensions.Options": "10.0.0"
+          "AutoMapper": "16.1.1"
         },
         "runtime": {
           "lib/netstandard2.1/AutoMapper.Extensions.Microsoft.DependencyInjection.dll": {
@@ -56,8 +52,7 @@
       },
       "FluentValidation.DependencyInjectionExtensions/12.1.1": {
         "dependencies": {
-          "FluentValidation": "12.1.1",
-          "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.7"
+          "FluentValidation": "12.1.1"
         },
         "runtime": {
           "lib/net8.0/FluentValidation.DependencyInjectionExtensions.dll": {
@@ -69,8 +64,6 @@
       "MediatR/14.1.0": {
         "dependencies": {
           "MediatR.Contracts": "2.0.1",
-          "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.7",
-          "Microsoft.Extensions.Logging.Abstractions": "10.0.7",
           "Microsoft.IdentityModel.JsonWebTokens": "8.14.0"
         },
         "runtime": {
@@ -88,42 +81,22 @@
           }
         }
       },
-      "Microsoft.Extensions.DependencyInjection.Abstractions/10.0.7": {
+      "Microsoft.EntityFrameworkCore/10.0.7": {
+        "dependencies": {
+          "Microsoft.EntityFrameworkCore.Abstractions": "10.0.7"
+        },
         "runtime": {
-          "lib/net10.0/Microsoft.Extensions.DependencyInjection.Abstractions.dll": {
-            "assemblyVersion": "10.0.0.0",
+          "lib/net10.0/Microsoft.EntityFrameworkCore.dll": {
+            "assemblyVersion": "10.0.7.0",
             "fileVersion": "10.0.726.21808"
           }
         }
       },
-      "Microsoft.Extensions.Logging.Abstractions/10.0.7": {
-        "dependencies": {
-          "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.7"
-        },
+      "Microsoft.EntityFrameworkCore.Abstractions/10.0.7": {
         "runtime": {
-          "lib/net10.0/Microsoft.Extensions.Logging.Abstractions.dll": {
-            "assemblyVersion": "10.0.0.0",
+          "lib/net10.0/Microsoft.EntityFrameworkCore.Abstractions.dll": {
+            "assemblyVersion": "10.0.7.0",
             "fileVersion": "10.0.726.21808"
-          }
-        }
-      },
-      "Microsoft.Extensions.Options/10.0.0": {
-        "dependencies": {
-          "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.7",
-          "Microsoft.Extensions.Primitives": "10.0.0"
-        },
-        "runtime": {
-          "lib/net10.0/Microsoft.Extensions.Options.dll": {
-            "assemblyVersion": "10.0.0.0",
-            "fileVersion": "10.0.25.52411"
-          }
-        }
-      },
-      "Microsoft.Extensions.Primitives/10.0.0": {
-        "runtime": {
-          "lib/net10.0/Microsoft.Extensions.Primitives.dll": {
-            "assemblyVersion": "10.0.0.0",
-            "fileVersion": "10.0.25.52411"
           }
         }
       },
@@ -159,7 +132,6 @@
       },
       "Microsoft.IdentityModel.Tokens/8.14.0": {
         "dependencies": {
-          "Microsoft.Extensions.Logging.Abstractions": "10.0.7",
           "Microsoft.IdentityModel.Logging": "8.14.0"
         },
         "runtime": {
@@ -169,7 +141,18 @@
           }
         }
       },
+      "NetTopologySuite/2.5.0": {
+        "runtime": {
+          "lib/netstandard2.0/NetTopologySuite.dll": {
+            "assemblyVersion": "2.0.0.0",
+            "fileVersion": "2.0.0.0"
+          }
+        }
+      },
       "TapitAI.Domain/1.0.0": {
+        "dependencies": {
+          "NetTopologySuite": "2.5.0"
+        },
         "runtime": {
           "TapitAI.Domain.dll": {
             "assemblyVersion": "1.0.0.0",
@@ -227,33 +210,19 @@
       "path": "mediatr.contracts/2.0.1",
       "hashPath": "mediatr.contracts.2.0.1.nupkg.sha512"
     },
-    "Microsoft.Extensions.DependencyInjection.Abstractions/10.0.7": {
+    "Microsoft.EntityFrameworkCore/10.0.7": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-Z6mfFEaFcwCfSboxJwOLfu7/31npCY9q70WUamHW/vRQhDvBKOT4Vf9YkZj5J6hLvJpb0oDEYfHunQZj0xxvKw==",
-      "path": "microsoft.extensions.dependencyinjection.abstractions/10.0.7",
-      "hashPath": "microsoft.extensions.dependencyinjection.abstractions.10.0.7.nupkg.sha512"
+      "sha512": "sha512-G6yclVO5/csPzzsymV0SemY2NDqE31CP5M3jprF5IuO9wJsh4aUOfYD8HCLuDmM1D1CfReegVic48O2r79d46Q==",
+      "path": "microsoft.entityframeworkcore/10.0.7",
+      "hashPath": "microsoft.entityframeworkcore.10.0.7.nupkg.sha512"
     },
-    "Microsoft.Extensions.Logging.Abstractions/10.0.7": {
+    "Microsoft.EntityFrameworkCore.Abstractions/10.0.7": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-tIEcQ2gvERrH2KiCjdsVcHGhXt9lIsuDStfOIeZWr7/fP8IXhGiYfx0/80PNI7WPO2IYuFtlZLSlnTS8+/Mchw==",
-      "path": "microsoft.extensions.logging.abstractions/10.0.7",
-      "hashPath": "microsoft.extensions.logging.abstractions.10.0.7.nupkg.sha512"
-    },
-    "Microsoft.Extensions.Options/10.0.0": {
-      "type": "package",
-      "serviceable": true,
-      "sha512": "sha512-8oCAgXOow5XDrY9HaXX1QmH3ORsyZO/ANVHBlhLyCeWTH5Sg4UuqZeOTWJi6484M+LqSx0RqQXDJtdYy2BNiLQ==",
-      "path": "microsoft.extensions.options/10.0.0",
-      "hashPath": "microsoft.extensions.options.10.0.0.nupkg.sha512"
-    },
-    "Microsoft.Extensions.Primitives/10.0.0": {
-      "type": "package",
-      "serviceable": true,
-      "sha512": "sha512-inRnbpCS0nwO/RuoZIAqxQUuyjaknOOnCEZB55KSMMjRhl0RQDttSmLSGsUJN3RQ3ocf5NDLFd2mOQViHqMK5w==",
-      "path": "microsoft.extensions.primitives/10.0.0",
-      "hashPath": "microsoft.extensions.primitives.10.0.0.nupkg.sha512"
+      "sha512": "sha512-TuxExnfIS/bSq3z2CbH0LwZH1oyj9iHhSGneU4fpxl3ikjZGZdSae9gcfnImV1rufH8f/ab1NnHwyL2BLyeZOg==",
+      "path": "microsoft.entityframeworkcore.abstractions/10.0.7",
+      "hashPath": "microsoft.entityframeworkcore.abstractions.10.0.7.nupkg.sha512"
     },
     "Microsoft.IdentityModel.Abstractions/8.14.0": {
       "type": "package",
@@ -282,6 +251,13 @@
       "sha512": "sha512-lKIZiBiGd36k02TCdMHp1KlNWisyIvQxcYJvIkz7P4gSQ9zi8dgh6S5Grj8NNG7HWYIPfQymGyoZ6JB5d1Lo1g==",
       "path": "microsoft.identitymodel.tokens/8.14.0",
       "hashPath": "microsoft.identitymodel.tokens.8.14.0.nupkg.sha512"
+    },
+    "NetTopologySuite/2.5.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-5/+2O2ADomEdUn09mlSigACdqvAf0m/pVPGtIPEPQWnyrVykYY0NlfXLIdkMgi41kvH9kNrPqYaFBTZtHYH7Xw==",
+      "path": "nettopologysuite/2.5.0",
+      "hashPath": "nettopologysuite.2.5.0.nupkg.sha512"
     },
     "TapitAI.Domain/1.0.0": {
       "type": "project",

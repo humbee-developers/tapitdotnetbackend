@@ -4,15 +4,6 @@
         <name>TapitAI.API</name>
     </assembly>
     <members>
-        <member name="M:TapitAI.API.Controllers.AdminController.GetDashboard">
-            <summary>Get admin dashboard summary.</summary>
-        </member>
-        <member name="M:TapitAI.API.Controllers.AdminController.PromoteToAdmin(System.String)">
-            <summary>Promote a user to Admin role.</summary>
-        </member>
-        <member name="M:TapitAI.API.Controllers.AdminController.DeleteUser(System.String)">
-            <summary>Soft-delete a user account.</summary>
-        </member>
         <member name="M:TapitAI.API.Controllers.AuthController.AdminLogin(TapitAI.Application.DTOs.Auth.AdminLoginDto,System.Threading.CancellationToken)">
             <summary>Authenticate as admin with email/password. Returns a JWT for admin endpoints.</summary>
         </member>

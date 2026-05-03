@@ -13,7 +13,11 @@
       "PowerShell(dotnet build \"e:\\\\Humbee Studio\\\\Clients\\\\VagKap\\\\tapitAI\\\\dotnetbackend\\\\TapitAI.Backend.slnx\" 2>&1 | Where-Object { $_ -match \"error CS|Build \" } | Select-Object -Last 20)",
       "Read(//c/Users/Patel/.nuget/packages/stream-chat-net/2.20.0/lib/net6.0/**)",
       "Read(//c/Users/Patel/.nuget/packages/swashbuckle.aspnetcore/10.1.7/**)",
-      "PowerShell(dotnet build \"e:\\\\Humbee Studio\\\\Clients\\\\VagKap\\\\tapitAI\\\\dotnetbackend\\\\TapitAI.Backend.slnx\" 2>&1 | Where-Object { $_ -match \"error CS|Build \" } | Select-Object -Last 5)"
+      "PowerShell(dotnet build \"e:\\\\Humbee Studio\\\\Clients\\\\VagKap\\\\tapitAI\\\\dotnetbackend\\\\TapitAI.Backend.slnx\" 2>&1 | Where-Object { $_ -match \"error CS|Build \" } | Select-Object -Last 5)",
+      "Bash(dotnet build *)",
+      "Bash(dotnet ef *)",
+      "Bash(dotnet add *)",
+      "PowerShell($env:ASPNETCORE_ENVIRONMENT = \"Production\"; dotnet ef database update --project \"src/TapitAI.Infrastructure\" --startup-project \"src/TapitAI.API\" 2>&1)"
     ],
     "additionalDirectories": [
       "C:\\Users\\Patel\\.claude\\projects\\e--Humbee-Studio-Clients-VagKap-tapitAI-dotnetbackend"

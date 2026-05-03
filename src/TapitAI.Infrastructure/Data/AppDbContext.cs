@@ -15,6 +15,19 @@ public class AppDbContext(
     : IdentityDbContext<ApplicationUser, ApplicationRole, string>(options)
 {
     public DbSet<Media> MediaFiles => Set<Media>();
+    public DbSet<UserDatingProfile> UserDatingProfiles => Set<UserDatingProfile>();
+    public DbSet<ProfilePhoto> ProfilePhotos => Set<ProfilePhoto>();
+    public DbSet<ProfileVideo> ProfileVideos => Set<ProfileVideo>();
+    public DbSet<TapStatus> TapStatuses => Set<TapStatus>();
+    public DbSet<UserLocation> UserLocations => Set<UserLocation>();
+    public DbSet<SpotlightSession> SpotlightSessions => Set<SpotlightSession>();
+    public DbSet<SpotlightSessionFeed> SpotlightSessionFeeds => Set<SpotlightSessionFeed>();
+    public DbSet<UserLike> UserLikes => Set<UserLike>();
+    public DbSet<Connection> Connections => Set<Connection>();
+    public DbSet<AdminSetting> AdminSettings => Set<AdminSetting>();
+    public DbSet<LookupOption> LookupOptions => Set<LookupOption>();
+    public DbSet<PlaceholderPhoto> PlaceholderPhotos => Set<PlaceholderPhoto>();
+    public DbSet<UserDevice> UserDevices => Set<UserDevice>();
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {

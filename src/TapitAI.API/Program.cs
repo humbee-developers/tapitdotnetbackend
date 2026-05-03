@@ -5,6 +5,8 @@ using TapitAI.API.Middleware;
 using TapitAI.Application;
 using TapitAI.Infrastructure;
 using TapitAI.Infrastructure.Data;
+using TapitAI.Infrastructure.Data.Seeds;
+using TapitAI.Infrastructure.Hubs;
 using TapitAI.Infrastructure.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -42,6 +44,7 @@ app.UseCors("AllowAll");
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+app.MapHub<ConnectionHub>("/hubs/connection");
 
 app.Run();
 
@@ -50,6 +53,9 @@ static async Task SeedDatabaseAsync(WebApplication app)
 {
     using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+    // Ensure PostGIS extension exists before migration
+    await db.Database.ExecuteSqlRawAsync("CREATE EXTENSION IF NOT EXISTS postgis;");
     await db.Database.MigrateAsync();
 
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<ApplicationRole>>();
@@ -79,4 +85,6 @@ static async Task SeedDatabaseAsync(WebApplication app)
         if (result.Succeeded)
             await userManager.AddToRoleAsync(admin, "Admin");
     }
+
+    await DatingAppSeeder.SeedAsync(db);
 }
