@@ -5,4 +5,5 @@ public class RedisSettings
     public const string SectionName = "Redis";
     public string ConnectionString { get; init; } = null!;
     public int DefaultExpiryMinutes { get; init; } = 60;
+    public string KeyPrefix { get; init; } = "tapitai:";
 }

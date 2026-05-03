@@ -81,3 +81,4 @@ e:\Humbee Studio\Clients\VagKap\tapitAI\dotnetbackend\src\TapitAI.API\obj\Debug\
 e:\Humbee Studio\Clients\VagKap\tapitAI\dotnetbackend\src\TapitAI.API\obj\Debug\net10.0\TapitAI.API.pdb
 e:\Humbee Studio\Clients\VagKap\tapitAI\dotnetbackend\src\TapitAI.API\obj\Debug\net10.0\TapitAI.API.genruntimeconfig.cache
 e:\Humbee Studio\Clients\VagKap\tapitAI\dotnetbackend\src\TapitAI.API\obj\Debug\net10.0\ref\TapitAI.API.dll
+e:\Humbee Studio\Clients\VagKap\tapitAI\dotnetbackend\src\TapitAI.API\obj\Debug\net10.0\TapitAI.API.sourcelink.json

@@ -17,3 +17,4 @@ e:\Humbee Studio\Clients\VagKap\tapitAI\dotnetbackend\src\TapitAI.Infrastructure
 e:\Humbee Studio\Clients\VagKap\tapitAI\dotnetbackend\src\TapitAI.Infrastructure\obj\Debug\net10.0\TapitAI.Infrastructure.pdb
 e:\Humbee Studio\Clients\VagKap\tapitAI\dotnetbackend\src\TapitAI.Infrastructure\obj\Debug\net10.0\TapitAI.Infrastructure.genruntimeconfig.cache
 e:\Humbee Studio\Clients\VagKap\tapitAI\dotnetbackend\src\TapitAI.Infrastructure\obj\Debug\net10.0\ref\TapitAI.Infrastructure.dll
+e:\Humbee Studio\Clients\VagKap\tapitAI\dotnetbackend\src\TapitAI.Infrastructure\obj\Debug\net10.0\TapitAI.Infrastructure.sourcelink.json

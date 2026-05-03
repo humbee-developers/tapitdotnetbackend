@@ -9,3 +9,4 @@ e:\Humbee Studio\Clients\VagKap\tapitAI\dotnetbackend\src\TapitAI.Domain\obj\Deb
 e:\Humbee Studio\Clients\VagKap\tapitAI\dotnetbackend\src\TapitAI.Domain\obj\Debug\net10.0\refint\TapitAI.Domain.dll
 e:\Humbee Studio\Clients\VagKap\tapitAI\dotnetbackend\src\TapitAI.Domain\obj\Debug\net10.0\TapitAI.Domain.pdb
 e:\Humbee Studio\Clients\VagKap\tapitAI\dotnetbackend\src\TapitAI.Domain\obj\Debug\net10.0\ref\TapitAI.Domain.dll
+e:\Humbee Studio\Clients\VagKap\tapitAI\dotnetbackend\src\TapitAI.Domain\obj\Debug\net10.0\TapitAI.Domain.sourcelink.json

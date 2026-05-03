@@ -50,6 +50,7 @@ public static class DependencyInjection
         services.Configure<StorageSettings>(configuration.GetSection(StorageSettings.SectionName));
         services.Configure<GetStreamSettings>(configuration.GetSection(GetStreamSettings.SectionName));
         services.Configure<RedisSettings>(configuration.GetSection(RedisSettings.SectionName));
+        services.Configure<FirebaseSettings>(configuration.GetSection(FirebaseSettings.SectionName));
     }
 
     private static void AddDatabase(this IServiceCollection services, IConfiguration configuration)
@@ -193,7 +194,7 @@ public static class DependencyInjection
         services.AddStackExchangeRedisCache(options =>
         {
             options.Configuration = redisSettings.ConnectionString;
-            options.InstanceName = "TapitAI:";
+            options.InstanceName = redisSettings.KeyPrefix;
         });
 
         services.AddScoped<ICacheService, RedisCacheService>();

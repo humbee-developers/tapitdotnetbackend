@@ -12,7 +12,11 @@
       "PowerShell(dotnet build \"e:\\\\Humbee Studio\\\\Clients\\\\VagKap\\\\tapitAI\\\\dotnetbackend\\\\TapitAI.Backend.slnx\" 2>&1 | Where-Object { $_ -match \"error|warning NU|Build \" } | Select-Object -Last 30)",
       "PowerShell(dotnet build \"e:\\\\Humbee Studio\\\\Clients\\\\VagKap\\\\tapitAI\\\\dotnetbackend\\\\TapitAI.Backend.slnx\" 2>&1 | Where-Object { $_ -match \"error CS|Build \" } | Select-Object -Last 20)",
       "Read(//c/Users/Patel/.nuget/packages/stream-chat-net/2.20.0/lib/net6.0/**)",
-      "Read(//c/Users/Patel/.nuget/packages/swashbuckle.aspnetcore/10.1.7/**)"
+      "Read(//c/Users/Patel/.nuget/packages/swashbuckle.aspnetcore/10.1.7/**)",
+      "PowerShell(dotnet build \"e:\\\\Humbee Studio\\\\Clients\\\\VagKap\\\\tapitAI\\\\dotnetbackend\\\\TapitAI.Backend.slnx\" 2>&1 | Where-Object { $_ -match \"error CS|Build \" } | Select-Object -Last 5)"
+    ],
+    "additionalDirectories": [
+      "C:\\Users\\Patel\\.claude\\projects\\e--Humbee-Studio-Clients-VagKap-tapitAI-dotnetbackend"
     ]
   }
 }
