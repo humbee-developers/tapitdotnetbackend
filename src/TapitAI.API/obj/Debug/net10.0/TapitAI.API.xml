@@ -4,8 +4,20 @@
         <name>TapitAI.API</name>
     </assembly>
     <members>
+        <member name="M:TapitAI.API.Controllers.AccountController.RegisterDevice(TapitAI.API.Controllers.AccountController.RegisterDeviceBody,System.Threading.CancellationToken)">
+            <summary>Register or update the FCM push token for this device. Call on app launch after login.</summary>
+        </member>
+        <member name="M:TapitAI.API.Controllers.AccountController.Logout(TapitAI.API.Controllers.AccountController.LogoutBody,System.Threading.CancellationToken)">
+            <summary>Log out: deactivates the device push token and taps the user out of the map.</summary>
+        </member>
         <member name="M:TapitAI.API.Controllers.AuthController.AdminLogin(TapitAI.Application.DTOs.Auth.AdminLoginDto,System.Threading.CancellationToken)">
             <summary>Authenticate as admin with email/password. Returns a JWT for admin endpoints.</summary>
+        </member>
+        <member name="M:TapitAI.API.Controllers.ChatController.GetToken(System.Threading.CancellationToken)">
+            <summary>Get Stream Chat credentials for initializing the mobile SDK.</summary>
+        </member>
+        <member name="M:TapitAI.API.Controllers.ChatController.GetChannels(System.Threading.CancellationToken)">
+            <summary>Get all active chat channels (both users started chat) for the current user.</summary>
         </member>
         <member name="M:TapitAI.API.Controllers.MediaController.Upload(Microsoft.AspNetCore.Http.IFormFile,TapitAI.Domain.Enums.MediaType,System.String,System.Threading.CancellationToken)">
             <summary>Upload a media file to the configured storage provider.</summary>

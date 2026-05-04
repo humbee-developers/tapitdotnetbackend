@@ -57,8 +57,36 @@ public class AcceptConnectionCommandHandler(
         await realTime.SendToUserAsync(connection.SenderUserId, HubEvents.ConnectionAccepted, revealPayloadForSender, ct);
         await realTime.SendToUserAsync(connection.ReceiverUserId, HubEvents.ConnectionAccepted, revealPayloadForReceiver, ct);
 
-        await firebase.SendToUserAsync(connection.SenderUserId, "Connection Accepted!",
-            $"{receiverProfile?.DisplayName ?? "Someone"} accepted your request!", ct: ct);
+        var senderPhotoUrl = senderProfile?.Photos.FirstOrDefault(ph => ph.IsPrimary)?.PublicUrl ?? "";
+        var receiverPhotoUrl = receiverProfile?.Photos.FirstOrDefault(ph => ph.IsPrimary)?.PublicUrl ?? "";
+
+        await firebase.SendToUserAsync(connection.SenderUserId,
+            title: "Connection Accepted!",
+            body: $"{receiverProfile?.DisplayName ?? "Someone"} accepted your request!",
+            data: new Dictionary<string, string>
+            {
+                ["type"]              = "ConnectionAccepted",
+                ["connectionId"]      = connection.Id.ToString(),
+                ["otherUserName"]     = receiverProfile?.DisplayName ?? "",
+                ["otherUserPhotoUrl"] = receiverPhotoUrl,
+                ["otherUserAgeRange"] = receiverProfile?.AgeRange ?? "",
+                ["message"]           = "Your connection request was accepted!"
+            },
+            ct: ct);
+
+        await firebase.SendToUserAsync(connection.ReceiverUserId,
+            title: "Connection Revealed!",
+            body: $"You're now connected with {senderProfile?.DisplayName ?? "someone nearby"}!",
+            data: new Dictionary<string, string>
+            {
+                ["type"]              = "ConnectionAccepted",
+                ["connectionId"]      = connection.Id.ToString(),
+                ["otherUserName"]     = senderProfile?.DisplayName ?? "",
+                ["otherUserPhotoUrl"] = senderPhotoUrl,
+                ["otherUserAgeRange"] = senderProfile?.AgeRange ?? "",
+                ["message"]           = "You accepted the connection request!"
+            },
+            ct: ct);
 
         return Result<ConnectionActionResultDto>.Success(new ConnectionActionResultDto
         {

@@ -16,4 +16,5 @@ public class UserDevice : AuditableEntity
 
     public void UpdateToken(string fcmToken) => FcmToken = fcmToken;
     public void Deactivate() => IsActive = false;
+    public void Reactivate(string fcmToken) { FcmToken = fcmToken; IsActive = true; }
 }

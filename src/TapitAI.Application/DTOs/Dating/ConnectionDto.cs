@@ -9,6 +9,7 @@ public class ConnectionInvitationDto
     public string? InvitationMessage { get; set; }
     public string InitiatedVia { get; set; } = null!;
     public DateTime InvitedAt { get; set; }
+    public DateTime ExpiresAt { get; set; }
     public string Status { get; set; } = null!;
     public bool IsSender { get; set; }
 }

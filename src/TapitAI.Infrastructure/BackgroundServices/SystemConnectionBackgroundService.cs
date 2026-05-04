@@ -47,7 +47,7 @@ public class SystemConnectionBackgroundService(
 
         var connectionRadius = await settings.GetDoubleAsync(AdminSettingKeys.ConnectionRadiusMiles, 25, ct);
         var connectionLimit = await settings.GetIntAsync(AdminSettingKeys.ConnectionsPerDayLimit, 3, ct);
-        var sendLimit = await settings.GetIntAsync(AdminSettingKeys.ConnectionRequestsSendPerDay, 5, ct);
+        var sendLimit = await settings.GetIntAsync(AdminSettingKeys.ConnectionRequestsSendPerDay, 10, ct);
         var receiveLimit = await settings.GetIntAsync(AdminSettingKeys.ConnectionRequestsReceivePerDay, 5, ct);
         var expiryMinutes = await settings.GetIntAsync(AdminSettingKeys.ConnectionExpiryMinutes, 30, ct);
 
@@ -72,11 +72,16 @@ public class SystemConnectionBackgroundService(
             .Where(p => profiledUserIds.Contains(p.UserId))
             .ToListAsync(ct);
 
-        var usersWithPending = await db.Set<Connection>()
-            .Where(c => c.InvitationStatus == InvitationStatus.Pending)
+        var placeholders = await db.Set<PlaceholderPhoto>()
+            .Where(pp => pp.IsActive)
+            .ToListAsync(ct);
+
+        var usersWithActive = await db.Set<Connection>()
+            .Where(c => c.InvitationStatus == InvitationStatus.Pending
+                     || c.InvitationStatus == InvitationStatus.Accepted)
             .Select(c => new[] { c.SenderUserId, c.ReceiverUserId })
             .ToListAsync(ct);
-        var blockedUserIds = usersWithPending.SelectMany(x => x).ToHashSet();
+        var blockedUserIds = usersWithActive.SelectMany(x => x).ToHashSet();
 
         var alreadyPaired = new HashSet<string>();
         var connectionsCreated = 0;
@@ -119,8 +124,9 @@ public class SystemConnectionBackgroundService(
                 var theirGender = receiverProfile.Gender;
                 var theirInterested = new HashSet<string>(receiverProfile.GenderPreference, StringComparer.OrdinalIgnoreCase);
 
-                if (!senderInterestedGenders.Contains(theirGender)) continue;
-                if (!theirInterested.Contains(senderGender)) continue;
+                var iAmInterested = senderInterestedGenders.Count == 0 || senderInterestedGenders.Contains(theirGender);
+                var theyAreInterested = theirInterested.Count == 0 || theirInterested.Contains(senderGender);
+                if (!iAmInterested && !theyAreInterested) continue;
 
                 var receiverReceiveToday = await db.Set<Connection>()
                     .CountAsync(c => c.ReceiverUserId == receiverLocation.UserId && c.InvitedAt.Date == today, ct);
@@ -147,10 +153,17 @@ public class SystemConnectionBackgroundService(
                 alreadyPaired.Add(senderLocation.UserId);
                 alreadyPaired.Add(receiverLocation.UserId);
 
+                var senderGenderStr = senderProfile.Gender ?? "MALE";
+                var senderPlaceholderPhotoUrl = GetPlaceholder(placeholders, senderGenderStr);
+                var senderMaskedName = MaskName(senderProfile.DisplayName);
+
                 await realTime.SendToUserAsync(receiverLocation.UserId, HubEvents.ConnectionRequestReceived, new
                 {
                     ConnectionId = connection.Id,
-                    SenderMaskedName = MaskName(senderProfile.DisplayName),
+                    SenderMaskedName = senderMaskedName,
+                    SenderAgeRange = senderProfile.AgeRange,
+                    SenderGender = senderGenderStr,
+                    SenderPlaceholderPhotoUrl = senderPlaceholderPhotoUrl,
                     Message = message,
                     InitiatedVia = "System",
                     ExpiresAt = connection.ExpiresAt
@@ -160,14 +173,28 @@ public class SystemConnectionBackgroundService(
                 {
                     ConnectionId = connection.Id,
                     ReceiverMaskedName = MaskName(receiverProfile.DisplayName),
-                    Message = "We found a match nearby!",
                     ExpiresAt = connection.ExpiresAt
                 }, ct);
 
-                await firebase.SendToUserAsync(receiverLocation.UserId, "New Match Nearby!",
-                    "Someone wants to connect with you!", ct: ct);
-                await firebase.SendToUserAsync(senderLocation.UserId, "We Found a Match!",
-                    "We found someone nearby for you!", ct: ct);
+                await firebase.SendToUserAsync(receiverLocation.UserId,
+                    title: "New Connection Request",
+                    body: $"{senderMaskedName} wants to connect with you!",
+                    data: new Dictionary<string, string>
+                    {
+                        ["type"]         = "ConnectionRequestReceived",
+                        ["connectionId"] = connection.Id.ToString(),
+                        ["message"]      = message
+                    },
+                    ct: ct);
+                await firebase.SendToUserAsync(senderLocation.UserId,
+                    title: "We Found a Match!",
+                    body: "We found someone nearby for you!",
+                    data: new Dictionary<string, string>
+                    {
+                        ["type"]         = "ConnectionRequestSent",
+                        ["connectionId"] = connection.Id.ToString()
+                    },
+                    ct: ct);
 
                 connectionsCreated++;
                 break;
@@ -187,6 +214,13 @@ public class SystemConnectionBackgroundService(
               + Math.Cos(lat1 * Math.PI / 180) * Math.Cos(lat2 * Math.PI / 180)
               * Math.Sin(dLon / 2) * Math.Sin(dLon / 2);
         return R * 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
+    }
+
+    private static string? GetPlaceholder(List<PlaceholderPhoto> placeholders, string gender)
+    {
+        var match = placeholders.FirstOrDefault(p =>
+            string.Equals(p.Gender, gender, StringComparison.OrdinalIgnoreCase));
+        return (match ?? placeholders.FirstOrDefault())?.PhotoUrl;
     }
 
     private static string MaskName(string name)

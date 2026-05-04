@@ -19,7 +19,7 @@ public static class DatingAppSeeder
         {
             (AdminSettingKeys.DiscoveryRadiusMiles, "100", "double", "Discovery radius shown on map (miles)", "Discovery"),
             (AdminSettingKeys.ConnectionsPerDayLimit, "3", "int", "Max established connections per user per day", "Connection"),
-            (AdminSettingKeys.ConnectionRequestsSendPerDay, "5", "int", "Max connection requests a user can send per day", "Connection"),
+            (AdminSettingKeys.ConnectionRequestsSendPerDay, "10", "int", "Max connection requests a user can send per day", "Connection"),
             (AdminSettingKeys.ConnectionRequestsReceivePerDay, "5", "int", "Max connection requests a user can receive per day", "Connection"),
             (AdminSettingKeys.ConnectionExpiryMinutes, "30", "int", "Minutes before a pending connection request expires", "Connection"),
             (AdminSettingKeys.ConnectionRadiusMiles, "25", "double", "Radius for system-initiated connections (miles)", "Connection"),

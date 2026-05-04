@@ -92,11 +92,28 @@ public class DiscoveryService(AppDbContext db, IAdminSettingService settings, IL
                 (c.SenderUserId == requestingUserId || c.ReceiverUserId == requestingUserId)
                 && c.ConnectedAt.HasValue && c.ConnectedAt.Value.Date == today, ct);
 
-        var hasPendingRequest = await db.Set<Connection>()
+        // True if I am already a party to any active connection (Pending or Accepted = stage 1 or stage 2).
+        // Withdrawn/Rejected/Expired are terminal — they don't block.
+        var iHaveActiveConnection = await db.Set<Connection>()
             .AsNoTracking()
             .AnyAsync(c =>
                 (c.SenderUserId == requestingUserId || c.ReceiverUserId == requestingUserId)
-                && c.InvitationStatus == InvitationStatus.Pending, ct);
+                && (c.InvitationStatus == InvitationStatus.Pending
+                    || c.InvitationStatus == InvitationStatus.Accepted), ct);
+
+        // Nearby users who are already a party to any active connection — they cannot be connected to.
+        var nearbyUsersWithActive = await db.Set<Connection>()
+            .AsNoTracking()
+            .Where(c =>
+                (c.InvitationStatus == InvitationStatus.Pending || c.InvitationStatus == InvitationStatus.Accepted)
+                && (nearbyUserIds.Contains(c.SenderUserId) || nearbyUserIds.Contains(c.ReceiverUserId)))
+            .Select(c => new { c.SenderUserId, c.ReceiverUserId })
+            .ToListAsync(ct);
+
+        var nearbyActiveUserIds = nearbyUsersWithActive
+            .SelectMany(c => new[] { c.SenderUserId, c.ReceiverUserId })
+            .Where(nearbyUserIds.Contains)
+            .ToHashSet();
 
         var results = new List<NearbyUserResult>();
 
@@ -140,7 +157,8 @@ public class DiscoveryService(AppDbContext db, IAdminSettingService settings, IL
             var existingConn = existingConnections.FirstOrDefault(c =>
                 c.SenderUserId == location.UserId || c.ReceiverUserId == location.UserId);
 
-            var canSend = !hasPendingRequest
+            var canSend = !iHaveActiveConnection
+                && !nearbyActiveUserIds.Contains(location.UserId)
                 && myConnectionsToday < connectionLimit
                 && (existingConn is null || existingConn.InvitationStatus == InvitationStatus.Rejected
                     || existingConn.InvitationStatus == InvitationStatus.Withdrawn

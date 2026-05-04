@@ -23,15 +23,29 @@ public class RejectConnectionCommandHandler(
         if (connection.ReceiverUserId != currentUser.UserId)
             return Result<ConnectionActionResultDto>.Failure("Only the receiver can reject a connection request.");
 
-        connection.Reject(cmd.RejectionMessage);
+        var message = string.IsNullOrWhiteSpace(cmd.RejectionMessage)
+            ? "Maybe another time!"
+            : cmd.RejectionMessage;
+
+        connection.Reject(message);
         await uow.SaveChangesAsync(ct);
 
         await realTime.SendToUserAsync(connection.SenderUserId, HubEvents.ConnectionRejected, new
         {
             ConnectionId = connection.Id,
-            RejectionMessage = cmd.RejectionMessage,
-            Message = "Your connection request was declined."
+            Message = message
         }, ct);
+
+        await firebase.SendToUserAsync(connection.SenderUserId,
+            title: "Request Not Accepted",
+            body: message,
+            data: new Dictionary<string, string>
+            {
+                ["type"]         = "ConnectionRejected",
+                ["connectionId"] = connection.Id.ToString(),
+                ["message"]      = message
+            },
+            ct: ct);
 
         return Result<ConnectionActionResultDto>.Success(new ConnectionActionResultDto
         {

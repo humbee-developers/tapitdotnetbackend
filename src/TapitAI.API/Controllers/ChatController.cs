@@ -1,9 +1,12 @@
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using TapitAI.Application.Common.Interfaces;
+using TapitAI.Application.Features.Chat.Queries;
 using TapitAI.Domain.Entities;
+using TapitAI.Domain.Enums;
 using TapitAI.Domain.Interfaces.Repositories;
 using TapitAI.Domain.Interfaces.Services;
 using TapitAI.Infrastructure.Settings;
@@ -18,10 +21,12 @@ public class ChatController(
     IChatService chatService,
     ICurrentUserService currentUser,
     IUnitOfWork uow,
-    IOptions<GetStreamSettings> streamSettings) : ControllerBase
+    IOptions<GetStreamSettings> streamSettings,
+    IMediator mediator) : ControllerBase
 {
-    [HttpGet("active")]
-    public async Task<IActionResult> GetActiveChatSession(CancellationToken ct)
+    /// <summary>Get Stream Chat credentials for initializing the mobile SDK.</summary>
+    [HttpGet("token")]
+    public async Task<IActionResult> GetToken(CancellationToken ct)
     {
         var userId = currentUser.UserId!;
 
@@ -37,8 +42,13 @@ public class ChatController(
         return Ok(new
         {
             ApiKey = streamSettings.Value.ApiKey,
-            UserId = chatToken.UserId,
+            StreamUserId = chatToken.UserId,
             Token = chatToken.Token
         });
     }
+
+    /// <summary>Get all active chat channels (both users started chat) for the current user.</summary>
+    [HttpGet("channels")]
+    public async Task<IActionResult> GetChannels(CancellationToken ct)
+        => Ok(await mediator.Send(new GetChatChannelsQuery(), ct));
 }

@@ -69,16 +69,43 @@ public class StartChatCommandHandler(
                     ReceiverConnectionMessage = connection.ReceiverConnectionMessage
                 }, ct);
 
-            await firebase.SendToUserAsync(otherUserId, "Let's Chat!",
-                $"{(currentUser.UserId == connection.SenderUserId ? senderProfile?.DisplayName : receiverProfile?.DisplayName) ?? "Your match"} started a chat!", ct: ct);
+            var matchName = (currentUser.UserId == connection.SenderUserId
+                ? senderProfile?.DisplayName
+                : receiverProfile?.DisplayName) ?? "Your match";
+
+            await firebase.SendToUserAsync(otherUserId,
+                title: "Let's Chat!",
+                body: $"{matchName} started a chat!",
+                data: new Dictionary<string, string>
+                {
+                    ["type"]          = "ChatStarted",
+                    ["connectionId"]  = connection.Id.ToString(),
+                    ["chatChannelId"] = channelId
+                },
+                ct: ct);
         }
         else
         {
+            var myProfile = await uow.Repository<UserDatingProfile>().Query()
+                .FirstOrDefaultAsync(p => p.UserId == currentUser.UserId, ct);
+
             await realTime.SendToUserAsync(otherUserId, HubEvents.WaitingForPartner, new
             {
                 ConnectionId = connection.Id,
-                Message = "Your match wants to start a chat — waiting for your response!"
+                Message = cmd.Message,
+                FromUserName = myProfile?.DisplayName ?? "Your match"
             }, ct);
+
+            await firebase.SendToUserAsync(otherUserId,
+                title: $"{myProfile?.DisplayName ?? "Your match"} wants to chat!",
+                body: cmd.Message ?? "Tap to start the conversation.",
+                data: new Dictionary<string, string>
+                {
+                    ["type"]         = "WaitingForPartner",
+                    ["connectionId"] = connection.Id.ToString(),
+                    ["message"]      = cmd.Message ?? ""
+                },
+                ct: ct);
         }
 
         await uow.SaveChangesAsync(ct);

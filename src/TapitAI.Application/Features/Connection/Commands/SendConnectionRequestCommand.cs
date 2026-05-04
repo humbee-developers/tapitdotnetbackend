@@ -31,7 +31,7 @@ public class SendConnectionRequestCommandHandler(
         var senderId = currentUser.UserId!;
         var receiverId = cmd.ReceiverUserId;
 
-        var dailySendLimit = await settings.GetIntAsync(AdminSettingKeys.ConnectionRequestsSendPerDay, 5, ct);
+        var dailySendLimit = await settings.GetIntAsync(AdminSettingKeys.ConnectionRequestsSendPerDay, 10, ct);
         var dailyReceiveLimit = await settings.GetIntAsync(AdminSettingKeys.ConnectionRequestsReceivePerDay, 5, ct);
         var connectionLimit = await settings.GetIntAsync(AdminSettingKeys.ConnectionsPerDayLimit, 3, ct);
         var expiryMinutes = await settings.GetIntAsync(AdminSettingKeys.ConnectionExpiryMinutes, 30, ct);
@@ -58,13 +58,23 @@ public class SendConnectionRequestCommandHandler(
         if (establishedToday >= connectionLimit)
             return Result<ConnectionActionResultDto>.Failure($"Daily connection limit of {connectionLimit} reached.");
 
-        var hasPending = await uow.Repository<Domain.Entities.Connection>().Query()
+        var senderIsActive = await uow.Repository<Domain.Entities.Connection>().Query()
             .AnyAsync(c =>
                 (c.SenderUserId == senderId || c.ReceiverUserId == senderId)
-                && c.InvitationStatus == InvitationStatus.Pending, ct);
+                && (c.InvitationStatus == InvitationStatus.Pending
+                    || c.InvitationStatus == InvitationStatus.Accepted), ct);
 
-        if (hasPending)
-            return Result<ConnectionActionResultDto>.Failure("You already have a pending connection request in progress.");
+        if (senderIsActive)
+            return Result<ConnectionActionResultDto>.Failure("You already have an active connection in progress.");
+
+        var receiverIsActive = await uow.Repository<Domain.Entities.Connection>().Query()
+            .AnyAsync(c =>
+                (c.SenderUserId == receiverId || c.ReceiverUserId == receiverId)
+                && (c.InvitationStatus == InvitationStatus.Pending
+                    || c.InvitationStatus == InvitationStatus.Accepted), ct);
+
+        if (receiverIsActive)
+            return Result<ConnectionActionResultDto>.Failure("This person is currently in another connection.");
 
         var senderLocation = await uow.Repository<UserLocation>().Query()
             .FirstOrDefaultAsync(ul => ul.UserId == senderId && ul.IsLatest, ct)
@@ -93,14 +103,20 @@ public class SendConnectionRequestCommandHandler(
         var receiverProfile = await uow.Repository<UserDatingProfile>().Query()
             .FirstOrDefaultAsync(p => p.UserId == receiverId, ct);
 
+        var placeholders = await uow.Repository<PlaceholderPhoto>().Query()
+            .Where(pp => pp.IsActive).ToListAsync(ct);
+
         var senderMaskedName = MaskName(senderProfile?.DisplayName ?? "Someone");
+        var senderGender = senderProfile?.Gender ?? "MALE";
+        var senderPlaceholderPhotoUrl = GetPlaceholder(placeholders, senderGender);
 
         await realTime.SendToUserAsync(receiverId, HubEvents.ConnectionRequestReceived, new
         {
             ConnectionId = connection.Id,
             SenderMaskedName = senderMaskedName,
             SenderAgeRange = senderProfile?.AgeRange,
-            SenderGender = senderProfile?.Gender,
+            SenderGender = senderGender,
+            SenderPlaceholderPhotoUrl = senderPlaceholderPhotoUrl,
             Message = invitationMessage,
             InitiatedVia = cmd.InitiatedVia.ToString(),
             ExpiresAt = connection.ExpiresAt
@@ -113,14 +129,29 @@ public class SendConnectionRequestCommandHandler(
             ExpiresAt = connection.ExpiresAt
         }, ct);
 
-        await firebase.SendToUserAsync(receiverId, "New Connection Request",
-            $"{senderMaskedName} wants to connect with you!", ct: ct);
+        await firebase.SendToUserAsync(receiverId,
+            title: "New Connection Request",
+            body: $"{senderMaskedName} wants to connect with you!",
+            data: new Dictionary<string, string>
+            {
+                ["type"]         = "ConnectionRequestReceived",
+                ["connectionId"] = connection.Id.ToString(),
+                ["message"]      = invitationMessage ?? ""
+            },
+            ct: ct);
 
         return Result<ConnectionActionResultDto>.Success(new ConnectionActionResultDto
         {
             ConnectionId = connection.Id,
             Status = connection.InvitationStatus.ToString()
         });
+    }
+
+    private static string? GetPlaceholder(List<PlaceholderPhoto> placeholders, string gender)
+    {
+        var match = placeholders.FirstOrDefault(p =>
+            string.Equals(p.Gender, gender, StringComparison.OrdinalIgnoreCase));
+        return (match ?? placeholders.FirstOrDefault())?.PhotoUrl;
     }
 
     private static string MaskName(string name)

@@ -14,7 +14,7 @@ namespace TapitAI.Application.Features.Connection.Commands;
 public record PassConnectionCommand(Guid ConnectionId, string? RejectionMessage) : IRequest<Result<ConnectionActionResultDto>>;
 
 public class PassConnectionCommandHandler(
-    IUnitOfWork uow, ICurrentUserService currentUser, IRealTimeService realTime)
+    IUnitOfWork uow, ICurrentUserService currentUser, IRealTimeService realTime, IFirebaseService firebase)
     : IRequestHandler<PassConnectionCommand, Result<ConnectionActionResultDto>>
 {
     public async Task<Result<ConnectionActionResultDto>> Handle(PassConnectionCommand cmd, CancellationToken ct)
@@ -22,15 +22,19 @@ public class PassConnectionCommandHandler(
         var connection = await uow.Repository<Domain.Entities.Connection>().GetByIdAsync(cmd.ConnectionId, ct)
             ?? throw new NotFoundException("Connection", cmd.ConnectionId);
 
+        var message = string.IsNullOrWhiteSpace(cmd.RejectionMessage)
+            ? "Maybe another time!"
+            : cmd.RejectionMessage;
+
         string otherUserId;
         if (connection.SenderUserId == currentUser.UserId)
         {
-            connection.SenderPass(cmd.RejectionMessage);
+            connection.SenderPass(message);
             otherUserId = connection.ReceiverUserId;
         }
         else if (connection.ReceiverUserId == currentUser.UserId)
         {
-            connection.ReceiverPass(cmd.RejectionMessage);
+            connection.ReceiverPass(message);
             otherUserId = connection.SenderUserId;
         }
         else
@@ -40,15 +44,22 @@ public class PassConnectionCommandHandler(
 
         await uow.SaveChangesAsync(ct);
 
-        var myProfile = await uow.Repository<UserDatingProfile>().Query()
-            .FirstOrDefaultAsync(p => p.UserId == currentUser.UserId, ct);
-
         await realTime.SendToUserAsync(otherUserId, HubEvents.ConnectionPassed, new
         {
             ConnectionId = connection.Id,
-            Message = cmd.RejectionMessage ?? "The other person decided to pass.",
-            FromUserName = myProfile?.DisplayName ?? "Someone"
+            Message = message
         }, ct);
+
+        await firebase.SendToUserAsync(otherUserId,
+            title: "Your match passed",
+            body: message,
+            data: new Dictionary<string, string>
+            {
+                ["type"]         = "ConnectionPassed",
+                ["connectionId"] = connection.Id.ToString(),
+                ["message"]      = message
+            },
+            ct: ct);
 
         return Result<ConnectionActionResultDto>.Success(new ConnectionActionResultDto
         {

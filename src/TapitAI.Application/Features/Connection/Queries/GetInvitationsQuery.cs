@@ -53,6 +53,7 @@ public class GetInvitationsQueryHandler(IUnitOfWork uow, ICurrentUserService cur
                 InvitationMessage = isSender ? c.SenderInvitationMessage : c.ReceiverInvitationMessage,
                 InitiatedVia = c.InitiatedVia.ToString(),
                 InvitedAt = c.InvitedAt,
+                ExpiresAt = c.ExpiresAt,
                 Status = c.InvitationStatus.ToString(),
                 IsSender = isSender
             };

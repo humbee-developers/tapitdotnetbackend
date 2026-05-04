@@ -22,7 +22,19 @@
       "Bash(Stop-Process -Id 39260 -Force -ErrorAction SilentlyContinue)",
       "Bash(Start-Sleep -Milliseconds 500)",
       "Bash(Write-Host \"Done\")",
-      "PowerShell(Stop-Process -Id 39260 -Force -ErrorAction SilentlyContinue)"
+      "PowerShell(Stop-Process -Id 39260 -Force -ErrorAction SilentlyContinue)",
+      "PowerShell(Stop-Process -Id 16676 -Force -ErrorAction SilentlyContinue)",
+      "Bash(git add *)",
+      "Bash(git reset *)",
+      "Bash(git commit -m ' *)",
+      "PowerShell(cd \"e:\\\\Humbee Studio\\\\Clients\\\\VagKap\\\\tapitAI\\\\dotnetbackend\"; dotnet build src/TapitAI.API/TapitAI.API.csproj -c Debug 2>&1 | Where-Object { $_ -match \"error\" } | Select-Object -First 10)",
+      "PowerShell(Stop-Process -Id 9812 -Force; Start-Sleep -Milliseconds 500; cd \"e:\\\\Humbee Studio\\\\Clients\\\\VagKap\\\\tapitAI\\\\dotnetbackend\"; dotnet build src/TapitAI.API/TapitAI.API.csproj -c Debug 2>&1 | Where-Object { $_ -match \"error CS|Build succeeded|Error\\\\\\(s\\\\\\)\" } | Select-Object -Last 5)",
+      "PowerShell(netstat -ano)",
+      "Bash(Get-ChildItem -Recurse -Path . -Filter \"*.cs\")",
+      "Bash(Select-Object -ExpandProperty FullName)",
+      "Bash(del \"e:\\\\Humbee Studio\\\\Clients\\\\VagKap\\\\tapitAI\\\\dotnetbackend\\\\src\\\\TapitAI.Application\\\\Features\\\\Chat\\\\Queries\\\\GetChatTokenQuery.cs\")",
+      "PowerShell(cd \"e:\\\\Humbee Studio\\\\Clients\\\\VagKap\\\\tapitAI\\\\dotnetbackend\"; dotnet build src/TapitAI.API/TapitAI.API.csproj -c Debug 2>&1 | Where-Object { $_ -match \"error CS|Build succeeded|Error\\\\\\(s\\\\\\)\" } | Select-Object -Last 10)",
+      "PowerShell(cd \"e:\\\\Humbee Studio\\\\Clients\\\\VagKap\\\\tapitAI\\\\dotnetbackend\"; dotnet build src/TapitAI.API/TapitAI.API.csproj -c Debug 2>&1 | Where-Object { $_ -match \"error CS\" } | Select-Object -First 10)"
     ],
     "additionalDirectories": [
       "C:\\Users\\Patel\\.claude\\projects\\e--Humbee-Studio-Clients-VagKap-tapitAI-dotnetbackend"
