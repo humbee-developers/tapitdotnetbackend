@@ -30,8 +30,6 @@ public class GetInvitationsQueryHandler(IUnitOfWork uow, ICurrentUserService cur
             .Distinct().ToList();
 
         var profiles = await uow.Repository<UserDatingProfile>().Query()
-            .Include(p => p.AgeRangeOption)
-            .Include(p => p.SelfGenderOption)
             .Where(p => otherUserIds.Contains(p.UserId))
             .ToListAsync(ct);
 
@@ -43,7 +41,7 @@ public class GetInvitationsQueryHandler(IUnitOfWork uow, ICurrentUserService cur
             var isSender = c.SenderUserId == userId;
             var otherUserId = isSender ? c.ReceiverUserId : c.SenderUserId;
             var profile = profiles.FirstOrDefault(p => p.UserId == otherUserId);
-            var gender = profile?.SelfGenderOption?.Value ?? "Male";
+            var gender = profile?.Gender ?? "MALE";
             var placeholder = GetPlaceholder(placeholders, gender);
 
             return new ConnectionInvitationDto
@@ -51,7 +49,7 @@ public class GetInvitationsQueryHandler(IUnitOfWork uow, ICurrentUserService cur
                 ConnectionId = c.Id,
                 OtherUserMaskedName = MaskName(profile?.DisplayName ?? "Someone"),
                 OtherUserPlaceholderPhotoUrl = placeholder,
-                OtherUserAgeRange = profile?.AgeRangeOption?.Value ?? string.Empty,
+                OtherUserAgeRange = profile?.AgeRange ?? string.Empty,
                 InvitationMessage = isSender ? c.SenderInvitationMessage : c.ReceiverInvitationMessage,
                 InitiatedVia = c.InitiatedVia.ToString(),
                 InvitedAt = c.InvitedAt,

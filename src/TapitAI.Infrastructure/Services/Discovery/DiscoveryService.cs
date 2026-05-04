@@ -22,8 +22,6 @@ public class DiscoveryService(AppDbContext db, IAdminSettingService settings) : 
 
         var myProfile = await db.Set<UserDatingProfile>()
             .AsNoTracking()
-            .Include(p => p.InterestedGenders)
-            .Include(p => p.SelfGenderOption)
             .FirstOrDefaultAsync(p => p.UserId == requestingUserId, ct);
 
         if (myProfile is null) return Array.Empty<NearbyUserResult>();
@@ -32,7 +30,7 @@ public class DiscoveryService(AppDbContext db, IAdminSettingService settings) : 
         var today = DateTime.UtcNow.Date;
         var radiusMeters = radiusMiles * 1609.34;
 
-        var myInterestedGenderValues = myProfile.InterestedGenders.Select(g => g.Value).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var myInterestedGenderValues = new HashSet<string>(myProfile.GenderPreference, StringComparer.OrdinalIgnoreCase);
 
         // Raw PostGIS query for nearby users
         var nearbyRaw = await db.Set<UserLocation>()
@@ -54,9 +52,6 @@ public class DiscoveryService(AppDbContext db, IAdminSettingService settings) : 
 
         var profiles = await db.Set<UserDatingProfile>()
             .AsNoTracking()
-            .Include(p => p.AgeRangeOption)
-            .Include(p => p.SelfGenderOption)
-            .Include(p => p.InterestedGenders)
             .Where(p => nearbyUserIds.Contains(p.UserId))
             .ToListAsync(ct);
 
@@ -99,9 +94,9 @@ public class DiscoveryService(AppDbContext db, IAdminSettingService settings) : 
 
             if (!activeTapUserIds.Contains(location.UserId)) continue;
 
-            var theirGender = profile.SelfGenderOption?.Value ?? string.Empty;
-            var theirInterestedGenders = profile.InterestedGenders.Select(g => g.Value).ToHashSet(StringComparer.OrdinalIgnoreCase);
-            var myGender = myProfile.SelfGenderOption?.Value ?? string.Empty;
+            var theirGender = profile.Gender;
+            var theirInterestedGenders = new HashSet<string>(profile.GenderPreference, StringComparer.OrdinalIgnoreCase);
+            var myGender = myProfile.Gender;
 
             var genderMatch = myInterestedGenderValues.Contains(theirGender) &&
                               theirInterestedGenders.Contains(myGender);
@@ -127,7 +122,7 @@ public class DiscoveryService(AppDbContext db, IAdminSettingService settings) : 
             results.Add(new NearbyUserResult(
                 location.UserId,
                 MaskName(profile.DisplayName),
-                profile.AgeRangeOption?.Value ?? string.Empty,
+                profile.AgeRange,
                 theirGender,
                 placeholder,
                 distanceMiles,

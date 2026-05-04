@@ -25,7 +25,6 @@ public class AppDbContext(
     public DbSet<UserLike> UserLikes => Set<UserLike>();
     public DbSet<Connection> Connections => Set<Connection>();
     public DbSet<AdminSetting> AdminSettings => Set<AdminSetting>();
-    public DbSet<LookupOption> LookupOptions => Set<LookupOption>();
     public DbSet<PlaceholderPhoto> PlaceholderPhotos => Set<PlaceholderPhoto>();
     public DbSet<UserDevice> UserDevices => Set<UserDevice>();
 

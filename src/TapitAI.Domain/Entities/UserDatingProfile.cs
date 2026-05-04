@@ -6,21 +6,16 @@ public class UserDatingProfile : AggregateRoot
 {
     public string UserId { get; private set; } = null!;
     public string DisplayName { get; private set; } = null!;
-    public Guid AgeRangeOptionId { get; private set; }
-    public Guid SelfGenderOptionId { get; private set; }
+    public string Gender { get; private set; } = null!;
+    public string[] GenderPreference { get; private set; } = [];
+    public string AgeRange { get; private set; } = null!;
     public int HeightFt { get; private set; }
-    public int HeightInch { get; private set; }
-    public Guid? PreferHeightOptionId { get; private set; }
-    public string? Description { get; private set; }
+    public int HeightIn { get; private set; }
+    public string[] HeightPreference { get; private set; } = [];
+    public string[] Lifestyle { get; private set; } = [];
+    public string[] LookingFor { get; private set; } = [];
+    public string? Bio { get; private set; }
     public Guid? PrimaryPhotoId { get; private set; }
-
-    public LookupOption AgeRangeOption { get; private set; } = null!;
-    public LookupOption SelfGenderOption { get; private set; } = null!;
-    public LookupOption? PreferHeightOption { get; private set; }
-
-    public ICollection<LookupOption> InterestedGenders { get; private set; } = new List<LookupOption>();
-    public ICollection<LookupOption> Lifestyles { get; private set; } = new List<LookupOption>();
-    public ICollection<LookupOption> LookingFors { get; private set; } = new List<LookupOption>();
 
     private readonly List<ProfilePhoto> _photos = new();
     public IReadOnlyList<ProfilePhoto> Photos => _photos.AsReadOnly();
@@ -31,33 +26,39 @@ public class UserDatingProfile : AggregateRoot
     private UserDatingProfile() { }
 
     public static UserDatingProfile Create(
-        string userId, string displayName,
-        Guid ageRangeOptionId, Guid selfGenderOptionId,
-        int heightFt, int heightInch,
-        Guid? preferHeightOptionId, string? description)
+        string userId, string displayName, string gender, string[] genderPreference,
+        string ageRange, int heightFt, int heightIn,
+        string[] heightPreference, string[] lifestyle, string[] lookingFor, string? bio)
         => new()
         {
             UserId = userId,
             DisplayName = displayName,
-            AgeRangeOptionId = ageRangeOptionId,
-            SelfGenderOptionId = selfGenderOptionId,
+            Gender = gender,
+            GenderPreference = genderPreference,
+            AgeRange = ageRange,
             HeightFt = heightFt,
-            HeightInch = heightInch,
-            PreferHeightOptionId = preferHeightOptionId,
-            Description = description
+            HeightIn = heightIn,
+            HeightPreference = heightPreference,
+            Lifestyle = lifestyle,
+            LookingFor = lookingFor,
+            Bio = bio
         };
 
     public void Update(
-        string displayName, Guid ageRangeOptionId, Guid selfGenderOptionId,
-        int heightFt, int heightInch, Guid? preferHeightOptionId, string? description)
+        string displayName, string gender, string[] genderPreference,
+        string ageRange, int heightFt, int heightIn,
+        string[] heightPreference, string[] lifestyle, string[] lookingFor, string? bio)
     {
         DisplayName = displayName;
-        AgeRangeOptionId = ageRangeOptionId;
-        SelfGenderOptionId = selfGenderOptionId;
+        Gender = gender;
+        GenderPreference = genderPreference;
+        AgeRange = ageRange;
         HeightFt = heightFt;
-        HeightInch = heightInch;
-        PreferHeightOptionId = preferHeightOptionId;
-        Description = description;
+        HeightIn = heightIn;
+        HeightPreference = heightPreference;
+        Lifestyle = lifestyle;
+        LookingFor = lookingFor;
+        Bio = bio;
     }
 
     public void SetPrimaryPhoto(Guid? photoId) => PrimaryPhotoId = photoId;

@@ -26,7 +26,7 @@ public class UsersController : BaseApiController
 
     /// <summary>Sync Auth0 user profile into the system (called after Auth0 login).</summary>
     [HttpPost("sync")]
-    [Authorize(Policy = "UserOnly")]
+    [Authorize(AuthenticationSchemes = "Auth0")]
     [ProducesResponseType(typeof(UserDto), StatusCodes.Status200OK)]
     public async Task<IActionResult> SyncAuth0User([FromBody] SyncAuth0UserRequest request, CancellationToken ct)
     {

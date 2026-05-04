@@ -64,8 +64,6 @@ public class SpotlightGenerationBackgroundService(
             .Where(pp => pp.IsActive).ToListAsync(ct);
 
         var profiles = await db.Set<UserDatingProfile>()
-            .Include(p => p.InterestedGenders)
-            .Include(p => p.SelfGenderOption)
             .Where(p => profiledUserIds.Contains(p.UserId))
             .ToListAsync(ct);
 
@@ -79,9 +77,8 @@ public class SpotlightGenerationBackgroundService(
                 var watcherProfile = profiles.FirstOrDefault(p => p.UserId == watcherId);
                 if (watcherProfile is null) continue;
 
-                var watcherInterestedGenders = watcherProfile.InterestedGenders
-                    .Select(g => g.Value).ToHashSet(StringComparer.OrdinalIgnoreCase);
-                var watcherGender = watcherProfile.SelfGenderOption?.Value ?? string.Empty;
+                var watcherInterestedGenders = new HashSet<string>(watcherProfile.GenderPreference, StringComparer.OrdinalIgnoreCase);
+                var watcherGender = watcherProfile.Gender;
 
                 // Expire old active sessions
                 var oldSessions = await db.Set<SpotlightSession>()
@@ -141,8 +138,8 @@ public class SpotlightGenerationBackgroundService(
                     {
                         var cp = profiles.FirstOrDefault(p => p.UserId == c.UserId);
                         if (cp is null) return false;
-                        var theirGender = cp.SelfGenderOption?.Value ?? string.Empty;
-                        var theirInterested = cp.InterestedGenders.Select(g => g.Value).ToHashSet(StringComparer.OrdinalIgnoreCase);
+                        var theirGender = cp.Gender;
+                        var theirInterested = new HashSet<string>(cp.GenderPreference, StringComparer.OrdinalIgnoreCase);
                         return watcherInterestedGenders.Contains(theirGender) && theirInterested.Contains(watcherGender);
                     })
                     .Take(maxUsers)

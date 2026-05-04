@@ -30,7 +30,6 @@ public class GetConnectionsQueryHandler(IUnitOfWork uow, ICurrentUserService cur
             .Distinct().ToList();
 
         var profiles = await uow.Repository<UserDatingProfile>().Query()
-            .Include(p => p.AgeRangeOption)
             .Include(p => p.Photos)
             .Where(p => otherUserIds.Contains(p.UserId))
             .ToListAsync(ct);
@@ -49,7 +48,7 @@ public class GetConnectionsQueryHandler(IUnitOfWork uow, ICurrentUserService cur
                 OtherUserId = otherUserId,
                 OtherUserDisplayName = profile?.DisplayName ?? "Unknown",
                 OtherUserPrimaryPhotoUrl = profile?.Photos.FirstOrDefault(ph => ph.IsPrimary)?.PublicUrl,
-                OtherUserAgeRange = profile?.AgeRangeOption?.Value ?? string.Empty,
+                OtherUserAgeRange = profile?.AgeRange ?? string.Empty,
                 InvitationStatus = c.InvitationStatus.ToString(),
                 MyConnectionStatus = myStatus?.ToString(),
                 PartnerConnectionStatus = partnerStatus?.ToString(),

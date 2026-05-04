@@ -1,6 +1,7 @@
 using Amazon;
 using Amazon.Runtime;
 using Amazon.S3;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -156,6 +157,8 @@ public static class DependencyInjection
             options.AddPolicy("AdminOrUser", policy =>
                 policy.RequireAuthenticatedUser().AddAuthenticationSchemes("Admin", "Auth0"));
         });
+
+        services.AddScoped<IClaimsTransformation, Auth0ClaimsTransformation>();
     }
 
     private static void AddRepositories(this IServiceCollection services)

@@ -17,12 +17,6 @@ public class GetMyProfileQueryHandler(IUnitOfWork uow, ICurrentUserService curre
     public async Task<Result<DatingProfileDto>> Handle(GetMyProfileQuery _, CancellationToken ct)
     {
         var profile = await uow.Repository<UserDatingProfile>().Query()
-            .Include(p => p.AgeRangeOption)
-            .Include(p => p.SelfGenderOption)
-            .Include(p => p.PreferHeightOption)
-            .Include(p => p.InterestedGenders)
-            .Include(p => p.Lifestyles)
-            .Include(p => p.LookingFors)
             .Include(p => p.Photos)
             .Include(p => p.Videos)
             .FirstOrDefaultAsync(p => p.UserId == currentUser.UserId, ct)

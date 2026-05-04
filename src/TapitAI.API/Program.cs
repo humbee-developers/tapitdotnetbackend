@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using TapitAI.API.Extensions;
+using TapitAI.API.Infrastructure;
 using TapitAI.API.Middleware;
 using TapitAI.Application;
 using TapitAI.Infrastructure;
@@ -13,7 +15,9 @@ using TapitAI.Infrastructure.Identity;
 var builder = WebApplication.CreateBuilder(args);
 
 // ── Services ──────────────────────────────────────────────────────────────────
-builder.Services.AddControllers();
+builder.Services.AddControllers(options =>
+    options.Conventions.Add(new RouteTokenTransformerConvention(new SlugifyParameterTransformer())));
+builder.Services.AddRouting(options => options.ConstraintMap["slugify"] = typeof(SlugifyParameterTransformer));
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddSwaggerWithAuth();
@@ -22,6 +26,17 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
         policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
+});
+
+builder.Services.AddHttpLogging(logging =>
+{
+    logging.LoggingFields = Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.RequestPath
+        | Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.RequestMethod
+        | Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.RequestBody
+        | Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.ResponseStatusCode
+        | Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.ResponseBody;
+    logging.RequestBodyLogLimit = 4096;
+    logging.ResponseBodyLogLimit = 4096;
 });
 
 // ── App Pipeline ───────────────────────────────────────────────────────────────
@@ -35,10 +50,11 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI(c =>
     {
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "TapitAI API v1");
-        c.RoutePrefix = string.Empty;
+        c.RoutePrefix = "swagger";
     });
 }
 
+app.UseHttpLogging();
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.UseHttpsRedirection();
 app.UseCors("AllowAll");
@@ -56,15 +72,17 @@ static async Task SeedDatabaseAsync(WebApplication app)
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
     // Create database if it doesn't exist, then enable PostGIS
-    var connStr = db.Database.GetConnectionString()!;
-    var builder = new NpgsqlConnectionStringBuilder(connStr);
-    var dbName = builder.Database;
-    builder.Database = "postgres";
-    await using (var adminConn = new NpgsqlConnection(builder.ConnectionString))
+    var connStr = app.Configuration.GetConnectionString("DefaultConnection")!;
+    var parsed = new NpgsqlConnectionStringBuilder(connStr);
+    var dbName = parsed.Database!;
+    var adminConnStr = connStr.Replace($"Database={dbName}", "Database=postgres",
+        StringComparison.OrdinalIgnoreCase);
+    await using (var adminConn = new NpgsqlConnection(adminConnStr))
     {
         await adminConn.OpenAsync();
         var exists = await new NpgsqlCommand(
-            $"SELECT 1 FROM pg_database WHERE datname = '{dbName}'", adminConn)
+            "SELECT 1 FROM pg_database WHERE datname = $1",
+            adminConn) { Parameters = { new() { Value = dbName } } }
             .ExecuteScalarAsync();
         if (exists is null)
             await new NpgsqlCommand($"CREATE DATABASE \"{dbName}\"", adminConn).ExecuteNonQueryAsync();

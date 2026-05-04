@@ -34,8 +34,6 @@ public class GetCurrentSpotlightQueryHandler(
             .ToListAsync(ct);
 
         var profiles = await uow.Repository<UserDatingProfile>().Query()
-            .Include(p => p.AgeRangeOption)
-            .Include(p => p.SelfGenderOption)
             .Include(p => p.Photos)
             .Where(p => session.FeedItems.Select(f => f.FeaturedUserId).Contains(p.UserId))
             .ToListAsync(ct);
@@ -53,8 +51,8 @@ public class GetCurrentSpotlightQueryHandler(
                     SpotlightSessionFeedId = fi.Id,
                     UserId = fi.FeaturedUserId,
                     MaskedName = MaskName(profile?.DisplayName ?? "Unknown"),
-                    AgeRange = profile?.AgeRangeOption?.Value ?? string.Empty,
-                    SelfGender = profile?.SelfGenderOption?.Value ?? string.Empty,
+                    AgeRange = profile?.AgeRange ?? string.Empty,
+                    SelfGender = profile?.Gender ?? string.Empty,
                     PlaceholderPhotoUrl = string.Empty, // filled by discovery service in background gen
                     HasLiked = likedUserIds.Contains(fi.FeaturedUserId),
                     CanSendConnectionRequest = likedUserIds.Contains(fi.FeaturedUserId),

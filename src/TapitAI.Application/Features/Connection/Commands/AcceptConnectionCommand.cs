@@ -29,11 +29,11 @@ public class AcceptConnectionCommandHandler(
         await uow.SaveChangesAsync(ct);
 
         var senderProfile = await uow.Repository<UserDatingProfile>().Query()
-            .Include(p => p.AgeRangeOption).Include(p => p.Photos)
+            .Include(p => p.Photos)
             .FirstOrDefaultAsync(p => p.UserId == connection.SenderUserId, ct);
 
         var receiverProfile = await uow.Repository<UserDatingProfile>().Query()
-            .Include(p => p.AgeRangeOption).Include(p => p.Photos)
+            .Include(p => p.Photos)
             .FirstOrDefaultAsync(p => p.UserId == connection.ReceiverUserId, ct);
 
         var revealPayloadForSender = new
@@ -41,7 +41,7 @@ public class AcceptConnectionCommandHandler(
             ConnectionId = connection.Id,
             OtherUserDisplayName = receiverProfile?.DisplayName,
             OtherUserPhotoUrl = receiverProfile?.Photos.FirstOrDefault(ph => ph.IsPrimary)?.PublicUrl,
-            OtherUserAgeRange = receiverProfile?.AgeRangeOption?.Value,
+            OtherUserAgeRange = receiverProfile?.AgeRange,
             Message = "Your connection request was accepted!"
         };
 
@@ -50,7 +50,7 @@ public class AcceptConnectionCommandHandler(
             ConnectionId = connection.Id,
             OtherUserDisplayName = senderProfile?.DisplayName,
             OtherUserPhotoUrl = senderProfile?.Photos.FirstOrDefault(ph => ph.IsPrimary)?.PublicUrl,
-            OtherUserAgeRange = senderProfile?.AgeRangeOption?.Value,
+            OtherUserAgeRange = senderProfile?.AgeRange,
             Message = "You accepted the connection request!"
         };
 

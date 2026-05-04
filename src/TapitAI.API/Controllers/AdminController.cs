@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using TapitAI.Application.Features.Admin.Commands;
 using TapitAI.Application.Features.Admin.Queries;
-using TapitAI.Domain.Enums;
 using TapitAI.Infrastructure.Identity;
 
 namespace TapitAI.API.Controllers;
@@ -56,24 +55,6 @@ public class AdminController(
     public async Task<IActionResult> UpdateSetting(string key, [FromBody] UpdateSettingBody body, CancellationToken ct)
         => Ok(await Mediator.Send(new UpdateAdminSettingCommand(key, body.Value), ct));
 
-    // ── Lookup Options ──────────────────────────────────────────────────────────
-
-    [HttpGet("lookup")]
-    public async Task<IActionResult> GetAllLookupOptions([FromQuery] LookupCategory? category, CancellationToken ct)
-        => Ok(await Mediator.Send(new GetLookupOptionsQuery(category, ActiveOnly: false), ct));
-
-    [HttpPost("lookup")]
-    public async Task<IActionResult> AddLookupOption([FromBody] AddLookupOptionCommand cmd, CancellationToken ct)
-        => Ok(await Mediator.Send(cmd, ct));
-
-    [HttpPut("lookup/{id:guid}")]
-    public async Task<IActionResult> UpdateLookupOption(Guid id, [FromBody] UpdateLookupOptionBody body, CancellationToken ct)
-        => Ok(await Mediator.Send(new UpdateLookupOptionCommand(id, body.Value, body.SortOrder, body.IsActive, body.IsDefault), ct));
-
-    [HttpDelete("lookup/{id:guid}")]
-    public async Task<IActionResult> DeleteLookupOption(Guid id, CancellationToken ct)
-        => Ok(await Mediator.Send(new DeleteLookupOptionCommand(id), ct));
-
     // ── Placeholder Photos ──────────────────────────────────────────────────────
 
     [HttpGet("placeholder-photos")]
@@ -100,7 +81,6 @@ public class AdminController(
         => Ok(await Mediator.Send(new DeletePlaceholderPhotoCommand(id), ct));
 
     public record UpdateSettingBody(string Value);
-    public record UpdateLookupOptionBody(string Value, int SortOrder, bool IsActive, bool IsDefault);
     public record UpdatePhotoBody(string PhotoUrl, int DisplayOrder, bool IsActive);
 }
 

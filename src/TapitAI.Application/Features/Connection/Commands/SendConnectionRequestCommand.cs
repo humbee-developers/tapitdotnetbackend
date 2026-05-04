@@ -88,13 +88,9 @@ public class SendConnectionRequestCommandHandler(
         await uow.SaveChangesAsync(ct);
 
         var senderProfile = await uow.Repository<UserDatingProfile>().Query()
-            .Include(p => p.AgeRangeOption)
-            .Include(p => p.SelfGenderOption)
             .FirstOrDefaultAsync(p => p.UserId == senderId, ct);
 
         var receiverProfile = await uow.Repository<UserDatingProfile>().Query()
-            .Include(p => p.AgeRangeOption)
-            .Include(p => p.SelfGenderOption)
             .FirstOrDefaultAsync(p => p.UserId == receiverId, ct);
 
         var senderMaskedName = MaskName(senderProfile?.DisplayName ?? "Someone");
@@ -103,8 +99,8 @@ public class SendConnectionRequestCommandHandler(
         {
             ConnectionId = connection.Id,
             SenderMaskedName = senderMaskedName,
-            SenderAgeRange = senderProfile?.AgeRangeOption?.Value,
-            SenderGender = senderProfile?.SelfGenderOption?.Value,
+            SenderAgeRange = senderProfile?.AgeRange,
+            SenderGender = senderProfile?.Gender,
             Message = invitationMessage,
             InitiatedVia = cmd.InitiatedVia.ToString(),
             ExpiresAt = connection.ExpiresAt

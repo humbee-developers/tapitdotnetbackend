@@ -69,8 +69,6 @@ public class SystemConnectionBackgroundService(
             .ToListAsync(ct);
 
         var profiles = await db.Set<UserDatingProfile>()
-            .Include(p => p.InterestedGenders)
-            .Include(p => p.SelfGenderOption)
             .Where(p => profiledUserIds.Contains(p.UserId))
             .ToListAsync(ct);
 
@@ -101,8 +99,8 @@ public class SystemConnectionBackgroundService(
                     && c.ConnectedAt.HasValue && c.ConnectedAt.Value.Date == today, ct);
             if (senderConnectionsToday >= connectionLimit) continue;
 
-            var senderInterestedGenders = senderProfile.InterestedGenders.Select(g => g.Value).ToHashSet(StringComparer.OrdinalIgnoreCase);
-            var senderGender = senderProfile.SelfGenderOption?.Value ?? string.Empty;
+            var senderInterestedGenders = new HashSet<string>(senderProfile.GenderPreference, StringComparer.OrdinalIgnoreCase);
+            var senderGender = senderProfile.Gender;
 
             var candidates = locations
                 .Where(ul =>
@@ -118,8 +116,8 @@ public class SystemConnectionBackgroundService(
                 var receiverProfile = profiles.FirstOrDefault(p => p.UserId == receiverLocation.UserId);
                 if (receiverProfile is null) continue;
 
-                var theirGender = receiverProfile.SelfGenderOption?.Value ?? string.Empty;
-                var theirInterested = receiverProfile.InterestedGenders.Select(g => g.Value).ToHashSet(StringComparer.OrdinalIgnoreCase);
+                var theirGender = receiverProfile.Gender;
+                var theirInterested = new HashSet<string>(receiverProfile.GenderPreference, StringComparer.OrdinalIgnoreCase);
 
                 if (!senderInterestedGenders.Contains(theirGender)) continue;
                 if (!theirInterested.Contains(senderGender)) continue;

@@ -12,18 +12,15 @@ public class DatingProfileController : BaseApiController
     public async Task<IActionResult> GetMyProfile(CancellationToken ct)
         => Ok(await Mediator.Send(new GetMyProfileQuery(), ct));
 
-    [HttpPost]
-    public async Task<IActionResult> CreateProfile([FromBody] CreateProfileCommand cmd, CancellationToken ct)
-        => Ok(await Mediator.Send(cmd, ct));
-
     [HttpPut]
-    public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileCommand cmd, CancellationToken ct)
+    public async Task<IActionResult> UpsertProfile([FromBody] UpsertProfileCommand cmd, CancellationToken ct)
         => Ok(await Mediator.Send(cmd, ct));
 
     [HttpPost("photos")]
     [RequestSizeLimit(50_000_000)]
-    public async Task<IActionResult> UploadPhotos([FromForm] IFormFileCollection photos, CancellationToken ct)
-        => Ok(await Mediator.Send(new UploadPhotosCommand(photos.ToList()), ct));
+    [Consumes("multipart/form-data")]
+    public async Task<IActionResult> UploadPhotos([FromForm] UploadPhotosRequest request, CancellationToken ct)
+        => Ok(await Mediator.Send(new UploadPhotosCommand(request.Photos), ct));
 
     [HttpDelete("photos/{photoId:guid}")]
     public async Task<IActionResult> DeletePhoto(Guid photoId, CancellationToken ct)
@@ -35,10 +32,21 @@ public class DatingProfileController : BaseApiController
 
     [HttpPost("videos")]
     [RequestSizeLimit(200_000_000)]
-    public async Task<IActionResult> UploadVideo([FromForm] IFormFile video, CancellationToken ct)
-        => Ok(await Mediator.Send(new UploadVideoCommand(video), ct));
+    [Consumes("multipart/form-data")]
+    public async Task<IActionResult> UploadVideo([FromForm] UploadVideoRequest request, CancellationToken ct)
+        => Ok(await Mediator.Send(new UploadVideoCommand(request.Video), ct));
 
     [HttpDelete("videos/{videoId:guid}")]
     public async Task<IActionResult> DeleteVideo(Guid videoId, CancellationToken ct)
         => Ok(await Mediator.Send(new DeleteVideoCommand(videoId), ct));
+}
+
+public class UploadPhotosRequest
+{
+    public List<IFormFile> Photos { get; set; } = [];
+}
+
+public class UploadVideoRequest
+{
+    public IFormFile Video { get; set; } = null!;
 }
