@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TapitAI.Application.Features.DatingProfile.Commands;
 using TapitAI.Application.Features.DatingProfile.Queries;
+using TapitAI.Application.DTOs.Dating;
 
 namespace TapitAI.API.Controllers;
 
@@ -9,12 +10,29 @@ namespace TapitAI.API.Controllers;
 public class DatingProfileController : BaseApiController
 {
     [HttpGet]
+    [HttpGet("me")]
     public async Task<IActionResult> GetMyProfile(CancellationToken ct)
         => Ok(await Mediator.Send(new GetMyProfileQuery(), ct));
 
     [HttpPut]
     public async Task<IActionResult> UpsertProfile([FromBody] UpsertProfileCommand cmd, CancellationToken ct)
         => Ok(await Mediator.Send(cmd, ct));
+
+    [HttpPatch("basic-info")]
+    public async Task<IActionResult> UpdateBasicInfo([FromBody] UpdateBasicInfoCommand cmd, CancellationToken ct)
+        => Ok(await Mediator.Send(cmd, ct));
+
+    [HttpPatch("lifestyle")]
+    public async Task<IActionResult> UpdateLifestyle([FromBody] UpdateLifestyleBody body, CancellationToken ct)
+        => Ok(await Mediator.Send(new UpdateLifestyleCommand(body.Lifestyle), ct));
+
+    [HttpPatch("looking-for")]
+    public async Task<IActionResult> UpdateLookingFor([FromBody] UpdateLookingForBody body, CancellationToken ct)
+        => Ok(await Mediator.Send(new UpdateLookingForCommand(body.LookingFor), ct));
+
+    [HttpPatch("bio")]
+    public async Task<IActionResult> UpdateBio([FromBody] UpdateBioBody body, CancellationToken ct)
+        => Ok(await Mediator.Send(new UpdateBioCommand(body.Bio), ct));
 
     [HttpPost("photos")]
     [RequestSizeLimit(50_000_000)]
@@ -50,3 +68,7 @@ public class UploadVideoRequest
 {
     public IFormFile Video { get; set; } = null!;
 }
+
+public record UpdateLookingForBody(string[] LookingFor);
+public record UpdateLifestyleBody(string[] Lifestyle);
+public record UpdateBioBody(string? Bio);

@@ -8,6 +8,7 @@ namespace TapitAI.API.Controllers;
 [Authorize(Policy = "UserOnly")]
 public class SpotlightController : BaseApiController
 {
+    [HttpGet]
     [HttpGet("current")]
     public async Task<IActionResult> GetCurrentSpotlight(CancellationToken ct)
         => Ok(await Mediator.Send(new GetCurrentSpotlightQuery(), ct));

@@ -15,25 +15,29 @@ public class StreamChatService : IChatService
         _clientFactory = new StreamClientFactory(options.Value.ApiKey, options.Value.ApiSecret);
     }
 
+    // Stream Chat only allows: a-z, 0-9, @, _, ., space, -
+    // Auth0 IDs contain '|' which is invalid — replace with '-'
+    private static string ToStreamId(string userId) => userId.Replace('|', '-');
+
     public async Task<ChatUserToken> CreateUserTokenAsync(
         string userId, string userName, string? imageUrl = null, CancellationToken ct = default)
     {
+        var streamId = ToStreamId(userId);
         await UpsertUserAsync(userId, userName, imageUrl, ct);
 
         var userClient = _clientFactory.GetUserClient();
-        var token = userClient.CreateToken(userId);
+        var token = userClient.CreateToken(streamId);
 
-        return new ChatUserToken(userId, token);
+        return new ChatUserToken(streamId, token);
     }
 
     public async Task<ChatChannel> CreateChannelAsync(
         string channelId, string channelType, string name,
         IEnumerable<string> memberIds, CancellationToken ct = default)
     {
-        var members = memberIds.ToArray();
+        var members = memberIds.Select(ToStreamId).ToArray();
         var channelClient = _clientFactory.GetChannelClient();
 
-        // Simple overload: GetOrCreateAsync(channelType, channelId, creatorId, memberIds[])
         var response = await channelClient.GetOrCreateAsync(
             channelType,
             channelId,
@@ -47,14 +51,14 @@ public class StreamChatService : IChatService
         string channelId, string channelType, IEnumerable<string> userIds, CancellationToken ct = default)
     {
         var channelClient = _clientFactory.GetChannelClient();
-        await channelClient.AddMembersAsync(channelType, channelId, userIds.ToArray());
+        await channelClient.AddMembersAsync(channelType, channelId, userIds.Select(ToStreamId).ToArray());
     }
 
     public async Task RemoveMembersAsync(
         string channelId, string channelType, IEnumerable<string> userIds, CancellationToken ct = default)
     {
         var channelClient = _clientFactory.GetChannelClient();
-        await channelClient.RemoveMembersAsync(channelType, channelId, userIds.ToArray());
+        await channelClient.RemoveMembersAsync(channelType, channelId, userIds.Select(ToStreamId).ToArray());
     }
 
     public async Task DeleteChannelAsync(
@@ -67,8 +71,9 @@ public class StreamChatService : IChatService
     public async Task UpsertUserAsync(
         string userId, string userName, string? imageUrl = null, CancellationToken ct = default)
     {
+        var streamId = ToStreamId(userId);
         var userClient = _clientFactory.GetUserClient();
-        var userRequest = new UserRequest { Id = userId, Name = userName };
+        var userRequest = new UserRequest { Id = streamId, Name = userName };
 
         if (!string.IsNullOrEmpty(imageUrl))
             userRequest.SetData("image", imageUrl);

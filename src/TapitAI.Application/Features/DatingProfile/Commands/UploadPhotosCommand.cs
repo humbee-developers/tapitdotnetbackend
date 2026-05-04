@@ -38,7 +38,7 @@ public class UploadPhotosCommandHandler(
 
             var media = MediaEntity.Create(file.FileName, file.FileName, file.ContentType,
                 file.Length, Domain.Enums.MediaType.Image,
-                Domain.Enums.StorageProviderType.Cloudinary,
+                upload.Provider,
                 upload.StorageKey, upload.PublicUrl, currentUser.UserId!,
                 "dating/photos");
 

@@ -33,7 +33,7 @@ public class UploadVideoCommandHandler(
 
         var media = MediaEntity.Create(cmd.Video.FileName, cmd.Video.FileName, cmd.Video.ContentType,
             cmd.Video.Length, Domain.Enums.MediaType.Video,
-            Domain.Enums.StorageProviderType.Cloudinary,
+            upload.Provider,
             upload.StorageKey, upload.PublicUrl, currentUser.UserId!, "dating/videos");
 
         await uow.Repository<MediaEntity>().AddAsync(media, ct);

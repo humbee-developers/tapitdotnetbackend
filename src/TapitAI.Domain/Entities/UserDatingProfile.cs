@@ -61,6 +61,23 @@ public class UserDatingProfile : AggregateRoot
         Bio = bio;
     }
 
+    public void UpdateBasicInfo(
+        string displayName, string gender, string[] genderPreference,
+        string ageRange, int heightFt, int heightIn, string[] heightPreference)
+    {
+        DisplayName = displayName;
+        Gender = gender;
+        GenderPreference = genderPreference;
+        AgeRange = ageRange;
+        HeightFt = heightFt;
+        HeightIn = heightIn;
+        HeightPreference = heightPreference;
+    }
+
+    public void UpdateLifestyle(string[] lifestyle) => Lifestyle = lifestyle;
+    public void UpdateLookingFor(string[] lookingFor) => LookingFor = lookingFor;
+    public void UpdateBio(string? bio) => Bio = bio;
+
     public void SetPrimaryPhoto(Guid? photoId) => PrimaryPhotoId = photoId;
 
     public void AddPhoto(ProfilePhoto photo) => _photos.Add(photo);

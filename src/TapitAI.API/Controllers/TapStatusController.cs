@@ -9,6 +9,7 @@ namespace TapitAI.API.Controllers;
 public class TapStatusController : BaseApiController
 {
     [HttpGet]
+    [HttpGet("me")]
     public async Task<IActionResult> GetStatus(CancellationToken ct)
         => Ok(await Mediator.Send(new GetMyTapStatusQuery(), ct));
 

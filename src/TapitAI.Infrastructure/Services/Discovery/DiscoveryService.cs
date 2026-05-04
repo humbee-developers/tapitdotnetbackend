@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using TapitAI.Application.Common.Interfaces;
 using TapitAI.Domain.Constants;
 using TapitAI.Domain.Entities;
@@ -8,7 +9,7 @@ using TapitAI.Infrastructure.Data;
 
 namespace TapitAI.Infrastructure.Services.Discovery;
 
-public class DiscoveryService(AppDbContext db, IAdminSettingService settings) : IDiscoveryService
+public class DiscoveryService(AppDbContext db, IAdminSettingService settings, ILogger<DiscoveryService> logger) : IDiscoveryService
 {
     public async Task<IReadOnlyList<NearbyUserResult>> GetNearbyUsersAsync(
         string requestingUserId, double radiusMiles, CancellationToken ct = default)
@@ -18,19 +19,27 @@ public class DiscoveryService(AppDbContext db, IAdminSettingService settings) : 
             .Where(ul => ul.UserId == requestingUserId && ul.IsLatest)
             .FirstOrDefaultAsync(ct);
 
-        if (myLocation is null) return Array.Empty<NearbyUserResult>();
+        if (myLocation is null)
+        {
+            logger.LogDebug("[Discovery] Skipped: requesting user {UserId} has no location record.", requestingUserId);
+            return Array.Empty<NearbyUserResult>();
+        }
 
         var myProfile = await db.Set<UserDatingProfile>()
             .AsNoTracking()
             .FirstOrDefaultAsync(p => p.UserId == requestingUserId, ct);
 
-        if (myProfile is null) return Array.Empty<NearbyUserResult>();
+        if (myProfile is null)
+        {
+            logger.LogDebug("[Discovery] Skipped: requesting user {UserId} has no dating profile.", requestingUserId);
+            return Array.Empty<NearbyUserResult>();
+        }
 
         var connectionLimit = await settings.GetIntAsync(AdminSettingKeys.ConnectionsPerDayLimit, 3, ct);
         var today = DateTime.UtcNow.Date;
         var radiusMeters = radiusMiles * 1609.34;
 
-        var myInterestedGenderValues = new HashSet<string>(myProfile.GenderPreference, StringComparer.OrdinalIgnoreCase);
+        var myGenderPreference = new HashSet<string>(myProfile.GenderPreference, StringComparer.OrdinalIgnoreCase);
 
         // Raw PostGIS query for nearby users
         var nearbyRaw = await db.Set<UserLocation>()
@@ -48,6 +57,8 @@ public class DiscoveryService(AppDbContext db, IAdminSettingService settings) : 
             .AsNoTracking()
             .ToListAsync(ct);
 
+        logger.LogDebug("[Discovery] Found {Count} users within {Radius} mi of {UserId}.", nearbyRaw.Count, radiusMiles, requestingUserId);
+
         var nearbyUserIds = nearbyRaw.Select(l => l.UserId).ToList();
 
         var profiles = await db.Set<UserDatingProfile>()
@@ -55,11 +66,13 @@ public class DiscoveryService(AppDbContext db, IAdminSettingService settings) : 
             .Where(p => nearbyUserIds.Contains(p.UserId))
             .ToListAsync(ct);
 
-        var activeTapUserIds = await db.Set<TapStatus>()
+        // Users with no TapStatus record are treated as TapIn (the domain default).
+        // Only exclude users who explicitly have a TapOut record.
+        var tappedOutUserIds = await db.Set<TapStatus>()
             .AsNoTracking()
-            .Where(ts => nearbyUserIds.Contains(ts.UserId) && ts.Status == TapStatusEnum.TapIn)
+            .Where(ts => nearbyUserIds.Contains(ts.UserId) && ts.Status == TapStatusEnum.TapOut)
             .Select(ts => ts.UserId)
-            .ToListAsync(ct);
+            .ToHashSetAsync(ct);
 
         var placeholders = await db.Set<PlaceholderPhoto>()
             .AsNoTracking()
@@ -90,18 +103,34 @@ public class DiscoveryService(AppDbContext db, IAdminSettingService settings) : 
         foreach (var location in nearbyRaw)
         {
             var profile = profiles.FirstOrDefault(p => p.UserId == location.UserId);
-            if (profile is null) continue;
+            if (profile is null)
+            {
+                logger.LogDebug("[Discovery] Filtered {UserId}: no dating profile.", location.UserId);
+                continue;
+            }
 
-            if (!activeTapUserIds.Contains(location.UserId)) continue;
+            if (tappedOutUserIds.Contains(location.UserId))
+            {
+                logger.LogDebug("[Discovery] Filtered {UserId}: tapped out.", location.UserId);
+                continue;
+            }
 
             var theirGender = profile.Gender;
-            var theirInterestedGenders = new HashSet<string>(profile.GenderPreference, StringComparer.OrdinalIgnoreCase);
+            var theirGenderPreference = new HashSet<string>(profile.GenderPreference, StringComparer.OrdinalIgnoreCase);
             var myGender = myProfile.Gender;
 
-            var genderMatch = myInterestedGenderValues.Contains(theirGender) &&
-                              theirInterestedGenders.Contains(myGender);
+            // Empty GenderPreference means "open to everyone" — skip gender filter in that case.
+            // OR logic: show if either side is interested in the other's gender.
+            // Strict mutual matching is enforced at connection-request time, not at discovery.
+            var iAmInterested = myGenderPreference.Count == 0 || myGenderPreference.Contains(theirGender);
+            var theyAreInterested = theirGenderPreference.Count == 0 || theirGenderPreference.Contains(myGender);
 
-            if (!genderMatch) continue;
+            if (!iAmInterested && !theyAreInterested)
+            {
+                logger.LogDebug("[Discovery] Filtered {UserId}: gender mismatch (me={MyGender} pref={MyPref}, them={TheirGender} pref={TheirPref}).",
+                    location.UserId, myGender, string.Join(",", myGenderPreference), theirGender, string.Join(",", theirGenderPreference));
+                continue;
+            }
 
             var distanceMeters = CalculateDistance(
                 myLocation.Location.Y, myLocation.Location.X,
@@ -132,6 +161,7 @@ public class DiscoveryService(AppDbContext db, IAdminSettingService settings) : 
             ));
         }
 
+        logger.LogDebug("[Discovery] Returning {Count} result(s) for user {UserId}.", results.Count, requestingUserId);
         return results.AsReadOnly();
     }
 
