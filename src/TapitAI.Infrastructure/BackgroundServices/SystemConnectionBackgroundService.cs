@@ -79,7 +79,7 @@ public class SystemConnectionBackgroundService(
 
         var usersWithActive = await db.Set<Connection>()
             .Where(c => c.InvitationStatus == InvitationStatus.Pending
-                     || c.InvitationStatus == InvitationStatus.Accepted)
+                     || (c.InvitationStatus == InvitationStatus.Accepted && c.ConnectedAt == null))
             .Select(c => new[] { c.SenderUserId, c.ReceiverUserId })
             .ToListAsync(ct);
         var blockedUserIds = usersWithActive.SelectMany(x => x).ToHashSet();

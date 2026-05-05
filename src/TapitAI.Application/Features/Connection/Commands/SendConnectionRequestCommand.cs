@@ -71,7 +71,7 @@ public class SendConnectionRequestCommandHandler(
             .AnyAsync(c =>
                 (c.SenderUserId == senderId || c.ReceiverUserId == senderId)
                 && (c.InvitationStatus == InvitationStatus.Pending
-                    || c.InvitationStatus == InvitationStatus.Accepted), ct);
+                    || (c.InvitationStatus == InvitationStatus.Accepted && c.ConnectedAt == null)), ct);
 
         if (senderIsActive)
             return Result<ConnectionActionResultDto>.Failure("You already have an active connection in progress.");
@@ -80,7 +80,7 @@ public class SendConnectionRequestCommandHandler(
             .AnyAsync(c =>
                 (c.SenderUserId == receiverId || c.ReceiverUserId == receiverId)
                 && (c.InvitationStatus == InvitationStatus.Pending
-                    || c.InvitationStatus == InvitationStatus.Accepted), ct);
+                    || (c.InvitationStatus == InvitationStatus.Accepted && c.ConnectedAt == null)), ct);
 
         if (receiverIsActive)
             return Result<ConnectionActionResultDto>.Failure("This person is currently in another connection.");

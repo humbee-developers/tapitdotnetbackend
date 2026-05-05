@@ -52,7 +52,8 @@
       "PowerShell(netstat -ano | findstr \":3000\" | ForEach-Object { $parts = $_ -split '\\\\s+'; $p = $parts[-1]; if \\($p -match '^\\\\d+$' -and $p -ne '0'\\) { Stop-Process -Id $p -Force -ErrorAction SilentlyContinue; Write-Host \"Killed $p\" } })",
       "PowerShell(cd \"e:\\\\Humbee Studio\\\\Clients\\\\VagKap\\\\tapitAI\\\\dotnetbackend\"; dotnet build src/TapitAI.API 2>&1 | Where-Object { $_ -match \"error|succeeded|failed\" } | Select-Object -Last 5)",
       "PowerShell(cd \"e:\\\\Humbee Studio\\\\Clients\\\\VagKap\\\\tapitAI\\\\dotnetbackend\"; dotnet build src/TapitAI.API 2>&1 | Where-Object { $_ -match \"error\" -and $_ -notmatch \"NU1608|NU1510|CS0618|warning\" } | Select-Object -First 20)",
-      "PowerShell(cd \"e:\\\\Humbee Studio\\\\Clients\\\\VagKap\\\\tapitAI\\\\dotnetbackend\"; dotnet build src/TapitAI.API 2>&1 | Where-Object { $_ -match \"error\" -and $_ -notmatch \"NU1608|NU1510|CS0618|warning\" } | Select-Object -Last 5)"
+      "PowerShell(cd \"e:\\\\Humbee Studio\\\\Clients\\\\VagKap\\\\tapitAI\\\\dotnetbackend\"; dotnet build src/TapitAI.API 2>&1 | Where-Object { $_ -match \"error\" -and $_ -notmatch \"NU1608|NU1510|CS0618|warning\" } | Select-Object -Last 5)",
+      "PowerShell(cd \"e:\\\\Humbee Studio\\\\Clients\\\\VagKap\\\\tapitAI\\\\dotnetbackend\"; dotnet build src/TapitAI.API 2>&1 | Where-Object { $_ -match \"error\" -and $_ -notmatch \"NU1608|NU1510|CS0618|warning\" } | Select-Object -Last 3)"
     ],
     "additionalDirectories": [
       "C:\\Users\\Patel\\.claude\\projects\\e--Humbee-Studio-Clients-VagKap-tapitAI-dotnetbackend"

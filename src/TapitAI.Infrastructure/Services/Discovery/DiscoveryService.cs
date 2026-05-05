@@ -104,18 +104,22 @@ public class DiscoveryService(AppDbContext db, IAdminSettingService settings, IL
 
         // True if I am already a party to any active connection (Pending or Accepted = stage 1 or stage 2).
         // Withdrawn/Rejected/Expired are terminal — they don't block.
+        // Block only while waiting for acceptance (Pending) or in the pass/connect decision phase
+        // (Accepted but not yet both connected). Once ConnectedAt is set, both sides have started
+        // chat and the user is free to connect with others.
         var iHaveActiveConnection = await db.Set<Connection>()
             .AsNoTracking()
             .AnyAsync(c =>
                 (c.SenderUserId == requestingUserId || c.ReceiverUserId == requestingUserId)
                 && (c.InvitationStatus == InvitationStatus.Pending
-                    || c.InvitationStatus == InvitationStatus.Accepted), ct);
+                    || (c.InvitationStatus == InvitationStatus.Accepted && c.ConnectedAt == null)), ct);
 
         // Nearby users who are already a party to any active connection — they cannot be connected to.
         var nearbyUsersWithActive = await db.Set<Connection>()
             .AsNoTracking()
             .Where(c =>
-                (c.InvitationStatus == InvitationStatus.Pending || c.InvitationStatus == InvitationStatus.Accepted)
+                (c.InvitationStatus == InvitationStatus.Pending
+                    || (c.InvitationStatus == InvitationStatus.Accepted && c.ConnectedAt == null))
                 && (nearbyUserIds.Contains(c.SenderUserId) || nearbyUserIds.Contains(c.ReceiverUserId)))
             .Select(c => new { c.SenderUserId, c.ReceiverUserId })
             .ToListAsync(ct);
