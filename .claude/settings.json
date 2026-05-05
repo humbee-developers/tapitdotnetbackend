@@ -57,7 +57,9 @@
       "PowerShell(netstat -ano | findstr \":3000\" | ForEach-Object { $p = \\($_ -split '\\\\s+'\\)[-1]; if \\($p -match '^\\\\d+$'\\) { Stop-Process -Id $p -Force -ErrorAction SilentlyContinue } }; Start-Sleep -Milliseconds 300; cd \"e:\\\\Humbee Studio\\\\Clients\\\\VagKap\\\\tapitAI\\\\dotnetbackend\"; dotnet build src/TapitAI.API 2>&1 | Select-String \"succeeded|Error\\\\\\(s\\\\\\)\" | Select-Object -Last 2)",
       "PowerShell(dotnet build \"e:\\\\Humbee Studio\\\\Clients\\\\VagKap\\\\tapitAI\\\\dotnetbackend\\\\src\\\\TapitAI.API\" 2>&1)",
       "PowerShell(tail -20)",
-      "PowerShell(Stop-Process -Id 38948 -Force -ErrorAction SilentlyContinue)"
+      "PowerShell(Stop-Process -Id 38948 -Force -ErrorAction SilentlyContinue)",
+      "PowerShell(Stop-Process -Name \"TapitAI.API\" -Force -ErrorAction SilentlyContinue)",
+      "PowerShell(dotnet build \"e:\\\\Humbee Studio\\\\Clients\\\\VagKap\\\\tapitAI\\\\dotnetbackend\\\\src\\\\TapitAI.Infrastructure\" 2>&1)"
     ],
     "additionalDirectories": [
       "C:\\Users\\Patel\\.claude\\projects\\e--Humbee-Studio-Clients-VagKap-tapitAI-dotnetbackend"

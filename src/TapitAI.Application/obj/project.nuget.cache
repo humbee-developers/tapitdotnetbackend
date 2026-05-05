@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "bbDRiEgCJ7Q=",
+  "dgSpecHash": "DQvq6fqFpfE=",
   "success": true,
-  "projectFilePath": "E:\\Humbee Studio\\Clients\\VagKap\\tapitAI\\dotnetbackend\\src\\TapitAI.Application\\TapitAI.Application.csproj",
+  "projectFilePath": "e:\\Humbee Studio\\Clients\\VagKap\\tapitAI\\dotnetbackend\\src\\TapitAI.Application\\TapitAI.Application.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\Patel\\.nuget\\packages\\automapper\\16.1.1\\automapper.16.1.1.nupkg.sha512",
     "C:\\Users\\Patel\\.nuget\\packages\\automapper.extensions.microsoft.dependencyinjection\\12.0.1\\automapper.extensions.microsoft.dependencyinjection.12.0.1.nupkg.sha512",
@@ -26,9 +26,9 @@
       "code": "NU1510",
       "level": "Warning",
       "message": "PackageReference Microsoft.Extensions.DependencyInjection.Abstractions will not be pruned. Consider removing this package from your dependencies, as it is likely unnecessary.",
-      "projectPath": "E:\\Humbee Studio\\Clients\\VagKap\\tapitAI\\dotnetbackend\\src\\TapitAI.Application\\TapitAI.Application.csproj",
+      "projectPath": "e:\\Humbee Studio\\Clients\\VagKap\\tapitAI\\dotnetbackend\\src\\TapitAI.Application\\TapitAI.Application.csproj",
       "warningLevel": 1,
-      "filePath": "E:\\Humbee Studio\\Clients\\VagKap\\tapitAI\\dotnetbackend\\src\\TapitAI.Application\\TapitAI.Application.csproj",
+      "filePath": "e:\\Humbee Studio\\Clients\\VagKap\\tapitAI\\dotnetbackend\\src\\TapitAI.Application\\TapitAI.Application.csproj",
       "libraryId": "Microsoft.Extensions.DependencyInjection.Abstractions",
       "targetGraphs": [
         "net10.0"
@@ -38,9 +38,9 @@
       "code": "NU1510",
       "level": "Warning",
       "message": "PackageReference Microsoft.Extensions.Logging.Abstractions will not be pruned. Consider removing this package from your dependencies, as it is likely unnecessary.",
-      "projectPath": "E:\\Humbee Studio\\Clients\\VagKap\\tapitAI\\dotnetbackend\\src\\TapitAI.Application\\TapitAI.Application.csproj",
+      "projectPath": "e:\\Humbee Studio\\Clients\\VagKap\\tapitAI\\dotnetbackend\\src\\TapitAI.Application\\TapitAI.Application.csproj",
       "warningLevel": 1,
-      "filePath": "E:\\Humbee Studio\\Clients\\VagKap\\tapitAI\\dotnetbackend\\src\\TapitAI.Application\\TapitAI.Application.csproj",
+      "filePath": "e:\\Humbee Studio\\Clients\\VagKap\\tapitAI\\dotnetbackend\\src\\TapitAI.Application\\TapitAI.Application.csproj",
       "libraryId": "Microsoft.Extensions.Logging.Abstractions",
       "targetGraphs": [
         "net10.0"
@@ -50,9 +50,9 @@
       "code": "NU1608",
       "level": "Warning",
       "message": "Detected package version outside of dependency constraint: AutoMapper.Extensions.Microsoft.DependencyInjection 12.0.1 requires AutoMapper (= 12.0.1) but version AutoMapper 16.1.1 was resolved.",
-      "projectPath": "E:\\Humbee Studio\\Clients\\VagKap\\tapitAI\\dotnetbackend\\src\\TapitAI.Application\\TapitAI.Application.csproj",
+      "projectPath": "e:\\Humbee Studio\\Clients\\VagKap\\tapitAI\\dotnetbackend\\src\\TapitAI.Application\\TapitAI.Application.csproj",
       "warningLevel": 1,
-      "filePath": "E:\\Humbee Studio\\Clients\\VagKap\\tapitAI\\dotnetbackend\\src\\TapitAI.Application\\TapitAI.Application.csproj",
+      "filePath": "e:\\Humbee Studio\\Clients\\VagKap\\tapitAI\\dotnetbackend\\src\\TapitAI.Application\\TapitAI.Application.csproj",
       "libraryId": "AutoMapper",
       "targetGraphs": [
         "net10.0"

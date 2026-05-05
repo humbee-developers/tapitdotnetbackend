@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "E:\\Humbee Studio\\Clients\\VagKap\\tapitAI\\dotnetbackend\\src\\TapitAI.Domain\\TapitAI.Domain.csproj": {}
+    "e:\\Humbee Studio\\Clients\\VagKap\\tapitAI\\dotnetbackend\\src\\TapitAI.Domain\\TapitAI.Domain.csproj": {}
   },
   "projects": {
-    "E:\\Humbee Studio\\Clients\\VagKap\\tapitAI\\dotnetbackend\\src\\TapitAI.Domain\\TapitAI.Domain.csproj": {
+    "e:\\Humbee Studio\\Clients\\VagKap\\tapitAI\\dotnetbackend\\src\\TapitAI.Domain\\TapitAI.Domain.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "E:\\Humbee Studio\\Clients\\VagKap\\tapitAI\\dotnetbackend\\src\\TapitAI.Domain\\TapitAI.Domain.csproj",
+        "projectUniqueName": "e:\\Humbee Studio\\Clients\\VagKap\\tapitAI\\dotnetbackend\\src\\TapitAI.Domain\\TapitAI.Domain.csproj",
         "projectName": "TapitAI.Domain",
-        "projectPath": "E:\\Humbee Studio\\Clients\\VagKap\\tapitAI\\dotnetbackend\\src\\TapitAI.Domain\\TapitAI.Domain.csproj",
+        "projectPath": "e:\\Humbee Studio\\Clients\\VagKap\\tapitAI\\dotnetbackend\\src\\TapitAI.Domain\\TapitAI.Domain.csproj",
         "packagesPath": "C:\\Users\\Patel\\.nuget\\packages\\",
-        "outputPath": "E:\\Humbee Studio\\Clients\\VagKap\\tapitAI\\dotnetbackend\\src\\TapitAI.Domain\\obj\\",
+        "outputPath": "e:\\Humbee Studio\\Clients\\VagKap\\tapitAI\\dotnetbackend\\src\\TapitAI.Domain\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

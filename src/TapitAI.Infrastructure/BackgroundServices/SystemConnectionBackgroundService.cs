@@ -54,13 +54,14 @@ public class SystemConnectionBackgroundService(
         var today = DateTime.UtcNow.Date;
         var radiusMeters = connectionRadius * 1609.34;
 
-        var tapInUserIds = await db.Set<TapStatus>()
-            .Where(ts => ts.Status == TapStatusEnum.TapIn)
+        // Users without a TapStatus record are TapIn by default — only exclude explicit TapOut
+        var tappedOutUserIds = await db.Set<TapStatus>()
+            .Where(ts => ts.Status == TapStatusEnum.TapOut)
             .Select(ts => ts.UserId)
-            .ToListAsync(ct);
+            .ToHashSetAsync(ct);
 
         var profiledUserIds = await db.Set<UserDatingProfile>()
-            .Where(p => tapInUserIds.Contains(p.UserId))
+            .Where(p => !tappedOutUserIds.Contains(p.UserId))
             .Select(p => p.UserId)
             .ToListAsync(ct);
 
