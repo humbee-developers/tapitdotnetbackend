@@ -13,4 +13,5 @@ public static class AdminSettingKeys
     public const string SystemConnectionIntervalSeconds = "system_connection_interval_seconds";
     public const string ConnectionExpiryMinutes = "connection_expiry_minutes";
     public const string ConnectionRadiusMiles = "connection_radius_miles";
+    public const string DiscoveryMinUsersThreshold = "discovery_min_users_threshold";
 }

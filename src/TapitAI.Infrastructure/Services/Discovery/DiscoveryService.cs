@@ -36,6 +36,7 @@ public class DiscoveryService(AppDbContext db, IAdminSettingService settings, IL
         }
 
         var connectionLimit = await settings.GetIntAsync(AdminSettingKeys.ConnectionsPerDayLimit, 3, ct);
+        var minUsersThreshold = await settings.GetIntAsync(AdminSettingKeys.DiscoveryMinUsersThreshold, 5, ct);
         var today = DateTime.UtcNow.Date;
         var radiusMeters = radiusMiles * 1609.34;
 
@@ -59,6 +60,27 @@ public class DiscoveryService(AppDbContext db, IAdminSettingService settings, IL
             .ToListAsync(ct);
 
         logger.LogDebug("[Discovery] Found {Count} users within {Radius} mi of {UserId}.", nearbyRaw.Count, radiusMiles, requestingUserId);
+
+        // Not enough nearby — fall back to global (no distance constraint, no previously-connected filter)
+        if (nearbyRaw.Count < minUsersThreshold)
+        {
+            var nearbyIds = nearbyRaw.Select(l => l.UserId).ToHashSet();
+            var globalRaw = await db.Set<UserLocation>()
+                .FromSqlRaw(@"
+                    SELECT ul.* FROM ""UserLocations"" ul
+                    WHERE ul.""IsLatest"" = true
+                    AND ul.""UserId"" != {0}
+                    AND ul.""CreatedAt"" >= NOW() - INTERVAL '30 minutes'
+                    ORDER BY ST_Distance(ul.""Location""::geography, ST_SetSRID(ST_MakePoint({1}, {2}), 4326)::geography)",
+                    requestingUserId, myLocation.Location.X, myLocation.Location.Y)
+                .AsNoTracking()
+                .ToListAsync(ct);
+
+            var extra = globalRaw.Where(l => !nearbyIds.Contains(l.UserId)).ToList();
+            nearbyRaw.AddRange(extra);
+            if (logger.IsEnabled(LogLevel.Debug))
+                logger.LogDebug("[Discovery] Expanded to global pool: {Total} total users for {UserId}.", nearbyRaw.Count, requestingUserId);
+        }
 
         var nearbyUserIds = nearbyRaw.Select(l => l.UserId).ToList();
 

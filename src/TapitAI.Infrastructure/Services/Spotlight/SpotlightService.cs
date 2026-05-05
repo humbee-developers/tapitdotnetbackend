@@ -32,11 +32,12 @@ public class SpotlightService(AppDbContext db, IAdminSettingService settings) : 
             .ToListAsync(ct);
         oldSessions.ForEach(s => s.Expire());
 
-        var tapInUserIds = await db.Set<TapStatus>()
+        // Users without a TapStatus record are TapIn by default — only exclude explicit TapOut
+        var tappedOutUserIds = await db.Set<TapStatus>()
             .AsNoTracking()
-            .Where(ts => ts.Status == TapStatusEnum.TapIn)
+            .Where(ts => ts.Status == TapStatusEnum.TapOut)
             .Select(ts => ts.UserId)
-            .ToListAsync(ct);
+            .ToHashSetAsync(ct);
 
         var shownUserIds = await db.Set<SpotlightSessionFeed>()
             .AsNoTracking()
@@ -56,8 +57,10 @@ public class SpotlightService(AppDbContext db, IAdminSettingService settings) : 
 
         var candidateUserIds = await db.Set<UserDatingProfile>()
             .AsNoTracking()
-            .Where(p => tapInUserIds.Contains(p.UserId) && p.UserId != userId
-                        && p.IsSpotlightVisible && !blockedUserIds.Contains(p.UserId))
+            .Where(p => p.UserId != userId
+                        && p.IsSpotlightVisible
+                        && !tappedOutUserIds.Contains(p.UserId)
+                        && !blockedUserIds.Contains(p.UserId))
             .Select(p => p.UserId)
             .ToListAsync(ct);
 
@@ -76,8 +79,7 @@ public class SpotlightService(AppDbContext db, IAdminSettingService settings) : 
         var watcherInterestedGenders = new HashSet<string>(watcherProfile.GenderPreference, StringComparer.OrdinalIgnoreCase);
         var watcherGender = watcherProfile.Gender;
 
-        var nearbyUnseen = allLocations
-            .Where(ul => !shownUserIds.Contains(ul.UserId))
+        var allWithDistance = allLocations
             .Select(ul => new
             {
                 ul.UserId,
@@ -85,32 +87,36 @@ public class SpotlightService(AppDbContext db, IAdminSettingService settings) : 
                     watcherLocation.Location.Y, watcherLocation.Location.X,
                     ul.Location.Y, ul.Location.X)
             })
-            .Where(x => x.Distance <= radiusMeters)
             .OrderBy(x => x.Distance)
-            .Take(maxUsers * 3)
             .ToList();
 
-        // Fall back to global pool if not enough nearby
-        if (nearbyUnseen.Count < maxUsers)
+        // Priority 1: nearby + unseen
+        var pool = allWithDistance
+            .Where(x => !shownUserIds.Contains(x.UserId) && x.Distance <= radiusMeters)
+            .ToList();
+
+        // Priority 2: not enough → add global unseen (no distance limit)
+        if (pool.Count < maxUsers)
         {
-            var excludeIds = shownUserIds.Concat(nearbyUnseen.Select(c => c.UserId)).ToHashSet();
-            var global = allLocations
-                .Where(ul => !excludeIds.Contains(ul.UserId))
-                .Select(ul => new
-                {
-                    ul.UserId,
-                    Distance = CalculateDistance(
-                        watcherLocation.Location.Y, watcherLocation.Location.X,
-                        ul.Location.Y, ul.Location.X)
-                })
-                .OrderBy(x => x.Distance)
-                .Take(maxUsers - nearbyUnseen.Count)
+            var seenInPool = pool.Select(x => x.UserId).ToHashSet();
+            var globalUnseen = allWithDistance
+                .Where(x => !shownUserIds.Contains(x.UserId) && !seenInPool.Contains(x.UserId))
                 .ToList();
-            nearbyUnseen.AddRange(global);
+            pool.AddRange(globalUnseen);
+        }
+
+        // Priority 3: still not enough → add previously shown users (drop seen filter entirely)
+        if (pool.Count < maxUsers)
+        {
+            var seenInPool = pool.Select(x => x.UserId).ToHashSet();
+            var shown = allWithDistance
+                .Where(x => !seenInPool.Contains(x.UserId))
+                .ToList();
+            pool.AddRange(shown);
         }
 
         // Gender compatibility filter — OR logic, empty preference = open to everyone
-        var compatible = nearbyUnseen
+        var compatible = pool
             .Where(c =>
             {
                 var cp = allProfiles.FirstOrDefault(p => p.UserId == c.UserId);
@@ -124,6 +130,27 @@ public class SpotlightService(AppDbContext db, IAdminSettingService settings) : 
             })
             .Take(maxUsers)
             .ToList();
+
+        // Final fallback: still not enough — fill remaining slots with completely random users,
+        // no filters at all (no gender, no distance, no tap-out, no block, no seen-before)
+        if (compatible.Count < maxUsers)
+        {
+            var filledIds = compatible.Select(x => x.UserId).ToHashSet();
+            var needed = maxUsers - compatible.Count;
+
+            var randomUserIds = await db.Set<UserDatingProfile>()
+                .AsNoTracking()
+                .Where(p => p.UserId != userId && !filledIds.Contains(p.UserId))
+                .Select(p => p.UserId)
+                .ToListAsync(ct);
+
+            var randomPick = randomUserIds
+                .OrderBy(_ => Random.Shared.Next())
+                .Take(needed)
+                .Select(id => new { UserId = id, Distance = 0.0 });
+
+            compatible.AddRange(randomPick);
+        }
 
         if (compatible.Count == 0) return null;
 

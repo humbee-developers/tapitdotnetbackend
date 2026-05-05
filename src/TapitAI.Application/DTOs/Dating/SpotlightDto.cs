@@ -12,10 +12,10 @@ public class SpotlightFeedItemDto
 {
     public Guid SpotlightSessionFeedId { get; set; }
     public string UserId { get; set; } = null!;
-    public string MaskedName { get; set; } = null!;
+    public string DisplayName { get; set; } = null!;
     public string AgeRange { get; set; } = null!;
-    public string SelfGender { get; set; } = null!;
-    public string PlaceholderPhotoUrl { get; set; } = null!;
+    public string Gender { get; set; } = null!;
+    public string? PhotoUrl { get; set; }
     public double DistanceMiles { get; set; }
     public bool HasLiked { get; set; }
     public bool CanSendConnectionRequest { get; set; }

@@ -60,14 +60,17 @@ public class GetCurrentSpotlightQueryHandler(
             FeedItems = session.FeedItems.Select(fi =>
             {
                 var profile = profiles.FirstOrDefault(p => p.UserId == fi.FeaturedUserId);
+                var photos = profile?.Photos;
+                var primaryPhoto = photos?.FirstOrDefault(ph => ph.IsPrimary)?.PublicUrl
+                    ?? (photos?.Count > 0 ? photos[0].PublicUrl : null);
                 return new SpotlightFeedItemDto
                 {
                     SpotlightSessionFeedId = fi.Id,
                     UserId = fi.FeaturedUserId,
-                    MaskedName = MaskName(profile?.DisplayName ?? "Unknown"),
+                    DisplayName = profile?.DisplayName ?? "Unknown",
                     AgeRange = profile?.AgeRange ?? string.Empty,
-                    SelfGender = profile?.Gender ?? string.Empty,
-                    PlaceholderPhotoUrl = string.Empty, // filled by discovery service in background gen
+                    Gender = profile?.Gender ?? string.Empty,
+                    PhotoUrl = primaryPhoto,
                     HasLiked = likedUserIds.Contains(fi.FeaturedUserId),
                     CanSendConnectionRequest = likedUserIds.Contains(fi.FeaturedUserId),
                     ViewedAt = fi.ViewedAt,
@@ -79,12 +82,4 @@ public class GetCurrentSpotlightQueryHandler(
         return Result<SpotlightSessionDto?>.Success(dto);
     }
 
-    private static string MaskName(string name)
-    {
-        if (string.IsNullOrWhiteSpace(name)) return name;
-        var chars = name.ToCharArray();
-        for (var i = 1; i < chars.Length; i += 2)
-            if (chars[i] != ' ') chars[i] = '*';
-        return new string(chars);
-    }
 }

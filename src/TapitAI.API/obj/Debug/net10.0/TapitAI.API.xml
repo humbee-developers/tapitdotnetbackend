@@ -40,6 +40,9 @@
         <member name="M:TapitAI.API.Controllers.MediaController.Delete(System.Guid,System.Threading.CancellationToken)">
             <summary>Delete a media file by ID.</summary>
         </member>
+        <member name="M:TapitAI.API.Controllers.SpotlightController.SendConnectionRequest(System.String,TapitAI.API.Controllers.SpotlightController.SpotlightConnectBody,System.Threading.CancellationToken)">
+            <summary>Send a connection request from the spotlight feed. Same flow as map requests.</summary>
+        </member>
         <member name="M:TapitAI.API.Controllers.SpotlightController.GetVisibility(System.Threading.CancellationToken)">
             <summary>Get whether the current user appears in other users' spotlight feeds.</summary>
         </member>

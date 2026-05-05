@@ -46,13 +46,13 @@ public class SpotlightGenerationBackgroundService(
         var maxUsers = await settings.GetIntAsync(AdminSettingKeys.SpotlightMaxUsers, 5, ct);
         var expiryMinutes = await settings.GetIntAsync(AdminSettingKeys.SpotlightExpiryMinutes, 60, ct);
 
-        var tapInUserIds = await db.Set<TapStatus>()
-            .Where(ts => ts.Status == TapStatusEnum.TapIn)
+        var tappedOutUserIds = await db.Set<TapStatus>()
+            .Where(ts => ts.Status == TapStatusEnum.TapOut)
             .Select(ts => ts.UserId)
-            .ToListAsync(ct);
+            .ToHashSetAsync(ct);
 
         var profiledUserIds = await db.Set<UserDatingProfile>()
-            .Where(p => tapInUserIds.Contains(p.UserId))
+            .Where(p => !tappedOutUserIds.Contains(p.UserId))
             .Select(p => p.UserId)
             .ToListAsync(ct);
 

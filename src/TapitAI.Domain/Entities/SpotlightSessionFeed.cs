@@ -24,4 +24,6 @@ public class SpotlightSessionFeed : BaseEntity
         LikedAt = DateTime.UtcNow;
         MarkViewed();
     }
+
+    public void Unlike() => LikedAt = null;
 }
