@@ -16,4 +16,16 @@ public class SpotlightController : BaseApiController
     [HttpPost("feed/{spotlightSessionFeedId:guid}/like")]
     public async Task<IActionResult> LikeUser(Guid spotlightSessionFeedId, CancellationToken ct)
         => Ok(await Mediator.Send(new LikeSpotlightUserCommand(spotlightSessionFeedId), ct));
+
+    /// <summary>Get whether the current user appears in other users' spotlight feeds.</summary>
+    [HttpGet("visibility")]
+    public async Task<IActionResult> GetVisibility(CancellationToken ct)
+        => Ok(await Mediator.Send(new GetSpotlightVisibilityQuery(), ct));
+
+    /// <summary>Toggle whether the current user appears in other users' spotlight feeds.</summary>
+    [HttpPost("visibility")]
+    public async Task<IActionResult> SetVisibility([FromBody] SetVisibilityBody body, CancellationToken ct)
+        => Ok(await Mediator.Send(new SetSpotlightVisibilityCommand(body.IsVisible), ct));
+
+    public record SetVisibilityBody(bool IsVisible);
 }

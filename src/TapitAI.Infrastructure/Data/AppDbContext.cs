@@ -27,6 +27,8 @@ public class AppDbContext(
     public DbSet<AdminSetting> AdminSettings => Set<AdminSetting>();
     public DbSet<PlaceholderPhoto> PlaceholderPhotos => Set<PlaceholderPhoto>();
     public DbSet<UserDevice> UserDevices => Set<UserDevice>();
+    public DbSet<UserBlock> UserBlocks => Set<UserBlock>();
+    public DbSet<UserReport> UserReports => Set<UserReport>();
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {

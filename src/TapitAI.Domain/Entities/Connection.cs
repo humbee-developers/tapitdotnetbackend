@@ -119,6 +119,8 @@ public class Connection : AggregateRoot
 
     public void SetChatChannel(string channelId) => ChatChannelId = channelId;
 
+    public void Block() => InvitationStatus = InvitationStatus.Blocked;
+
     public void Expire()
     {
         if (InvitationStatus == InvitationStatus.Pending)

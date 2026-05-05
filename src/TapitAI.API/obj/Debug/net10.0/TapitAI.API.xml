@@ -10,6 +10,12 @@
         <member name="M:TapitAI.API.Controllers.AccountController.Logout(TapitAI.API.Controllers.AccountController.LogoutBody,System.Threading.CancellationToken)">
             <summary>Log out: deactivates the device push token and taps the user out of the map.</summary>
         </member>
+        <member name="M:TapitAI.API.Controllers.AccountController.GetBlocked(System.Threading.CancellationToken)">
+            <summary>Get the list of users blocked by the current user.</summary>
+        </member>
+        <member name="M:TapitAI.API.Controllers.AccountController.Unblock(System.String,System.Threading.CancellationToken)">
+            <summary>Unblock a previously blocked user.</summary>
+        </member>
         <member name="M:TapitAI.API.Controllers.AuthController.AdminLogin(TapitAI.Application.DTOs.Auth.AdminLoginDto,System.Threading.CancellationToken)">
             <summary>Authenticate as admin with email/password. Returns a JWT for admin endpoints.</summary>
         </member>
@@ -19,11 +25,26 @@
         <member name="M:TapitAI.API.Controllers.ChatController.GetChannels(System.Threading.CancellationToken)">
             <summary>Get all active chat channels (both users started chat) for the current user.</summary>
         </member>
+        <member name="M:TapitAI.API.Controllers.ChatController.BlockUser(System.String,System.Threading.CancellationToken)">
+            <summary>Block the other user in a chat channel. Deletes the channel and prevents future contact.</summary>
+        </member>
+        <member name="M:TapitAI.API.Controllers.ChatController.ReportUser(System.String,TapitAI.API.Controllers.ChatController.ReportBody,System.Threading.CancellationToken)">
+            <summary>Report the other user in a chat channel.</summary>
+        </member>
+        <member name="M:TapitAI.API.Controllers.ChatController.GetMatchDetails(System.String,System.Threading.CancellationToken)">
+            <summary>Get the details of a specific chat channel by its channel ID.</summary>
+        </member>
         <member name="M:TapitAI.API.Controllers.MediaController.Upload(Microsoft.AspNetCore.Http.IFormFile,TapitAI.Domain.Enums.MediaType,System.String,System.Threading.CancellationToken)">
             <summary>Upload a media file to the configured storage provider.</summary>
         </member>
         <member name="M:TapitAI.API.Controllers.MediaController.Delete(System.Guid,System.Threading.CancellationToken)">
             <summary>Delete a media file by ID.</summary>
+        </member>
+        <member name="M:TapitAI.API.Controllers.SpotlightController.GetVisibility(System.Threading.CancellationToken)">
+            <summary>Get whether the current user appears in other users' spotlight feeds.</summary>
+        </member>
+        <member name="M:TapitAI.API.Controllers.SpotlightController.SetVisibility(TapitAI.API.Controllers.SpotlightController.SetVisibilityBody,System.Threading.CancellationToken)">
+            <summary>Toggle whether the current user appears in other users' spotlight feeds.</summary>
         </member>
         <member name="M:TapitAI.API.Controllers.UsersController.GetUsers(System.Int32,System.Int32,System.String,System.Threading.CancellationToken)">
             <summary>Get paginated list of users. Admin only.</summary>

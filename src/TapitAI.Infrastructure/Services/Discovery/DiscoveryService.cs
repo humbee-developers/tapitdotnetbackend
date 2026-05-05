@@ -47,6 +47,7 @@ public class DiscoveryService(AppDbContext db, IAdminSettingService settings, IL
                 SELECT ul.* FROM ""UserLocations"" ul
                 WHERE ul.""IsLatest"" = true
                 AND ul.""UserId"" != {0}
+                AND ul.""CreatedAt"" >= NOW() - INTERVAL '30 minutes'
                 AND ST_DWithin(
                     ul.""Location""::geography,
                     ST_SetSRID(ST_MakePoint({1}, {2}), 4326)::geography,
@@ -60,6 +61,15 @@ public class DiscoveryService(AppDbContext db, IAdminSettingService settings, IL
         logger.LogDebug("[Discovery] Found {Count} users within {Radius} mi of {UserId}.", nearbyRaw.Count, radiusMiles, requestingUserId);
 
         var nearbyUserIds = nearbyRaw.Select(l => l.UserId).ToList();
+
+        // Users who blocked me, or whom I blocked — exclude from map entirely (both directions)
+        var blockRelations = await db.Set<UserBlock>()
+            .AsNoTracking()
+            .Where(b =>
+                (b.BlockerUserId == requestingUserId && nearbyUserIds.Contains(b.BlockedUserId)) ||
+                (b.BlockedUserId == requestingUserId && nearbyUserIds.Contains(b.BlockerUserId)))
+            .Select(b => b.BlockerUserId == requestingUserId ? b.BlockedUserId : b.BlockerUserId)
+            .ToHashSetAsync(ct);
 
         var profiles = await db.Set<UserDatingProfile>()
             .AsNoTracking()
@@ -129,6 +139,12 @@ public class DiscoveryService(AppDbContext db, IAdminSettingService settings, IL
             if (tappedOutUserIds.Contains(location.UserId))
             {
                 logger.LogDebug("[Discovery] Filtered {UserId}: tapped out.", location.UserId);
+                continue;
+            }
+
+            if (blockRelations.Contains(location.UserId))
+            {
+                logger.LogDebug("[Discovery] Filtered {UserId}: blocked.", location.UserId);
                 continue;
             }
 

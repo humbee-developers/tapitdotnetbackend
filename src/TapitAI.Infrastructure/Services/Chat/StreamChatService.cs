@@ -80,4 +80,12 @@ public class StreamChatService : IChatService
 
         await userClient.UpsertAsync(userRequest);
     }
+
+    public async Task SendMessageAsync(
+        string channelId, string channelType, string senderId, string text, CancellationToken ct = default)
+    {
+        var streamSenderId = ToStreamId(senderId);
+        var messageClient = _clientFactory.GetMessageClient();
+        await messageClient.SendMessageAsync(channelType, channelId, streamSenderId, text);
+    }
 }

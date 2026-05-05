@@ -23,26 +23,45 @@ public class UpdateBasicInfoCommandHandler(IUnitOfWork uow, ICurrentUserService 
 {
     public async Task<Result<DatingProfileDto>> Handle(UpdateBasicInfoCommand cmd, CancellationToken ct)
     {
-        var profile = await uow.Repository<UserDatingProfile>().Query()
-            .Include(p => p.Photos)
-            .Include(p => p.Videos)
-            .FirstOrDefaultAsync(p => p.UserId == currentUser.UserId, ct);
+        var userId = currentUser.UserId!;
+        UserDatingProfile? profile = null;
 
-        if (profile is null)
+        for (var attempt = 0; attempt < 2; attempt++)
         {
-            profile = UserDatingProfile.Create(
-                currentUser.UserId!, cmd.DisplayName, cmd.Gender, cmd.GenderPreference,
-                cmd.AgeRange, cmd.HeightFt, cmd.HeightIn, cmd.HeightPreference, [], [], null);
-            await uow.Repository<UserDatingProfile>().AddAsync(profile, ct);
-        }
-        else
-        {
-            profile.UpdateBasicInfo(
-                cmd.DisplayName, cmd.Gender, cmd.GenderPreference,
-                cmd.AgeRange, cmd.HeightFt, cmd.HeightIn, cmd.HeightPreference);
+            profile = await uow.Repository<UserDatingProfile>().Query()
+                .Include(p => p.Photos)
+                .Include(p => p.Videos)
+                .FirstOrDefaultAsync(p => p.UserId == userId, ct);
+
+            if (profile is null)
+            {
+                profile = UserDatingProfile.Create(
+                    userId, cmd.DisplayName, cmd.Gender, cmd.GenderPreference,
+                    cmd.AgeRange, cmd.HeightFt, cmd.HeightIn, cmd.HeightPreference, [], [], null);
+                await uow.Repository<UserDatingProfile>().AddAsync(profile, ct);
+            }
+            else
+            {
+                profile.UpdateBasicInfo(
+                    cmd.DisplayName, cmd.Gender, cmd.GenderPreference,
+                    cmd.AgeRange, cmd.HeightFt, cmd.HeightIn, cmd.HeightPreference);
+            }
+
+            try
+            {
+                await uow.SaveChangesAsync(ct);
+                break;
+            }
+            catch (DbUpdateException ex) when (attempt == 0 && IsDuplicateKey(ex))
+            {
+                uow.ResetChangeTracker();
+            }
         }
 
-        await uow.SaveChangesAsync(ct);
-        return Result<DatingProfileDto>.Success(ProfileDtoMapper.Map(profile));
+        return Result<DatingProfileDto>.Success(ProfileDtoMapper.Map(profile!));
     }
+
+    private static bool IsDuplicateKey(DbUpdateException ex)
+        => ex.InnerException?.Message.Contains("23505") == true
+        || ex.InnerException?.Message.Contains("duplicate key") == true;
 }

@@ -6,6 +6,7 @@ using TapitAI.Application.Features.TapStatus.Queries;
 namespace TapitAI.API.Controllers;
 
 [Authorize(Policy = "UserOnly")]
+[Route("api/tap")]
 public class TapStatusController : BaseApiController
 {
     [HttpGet]

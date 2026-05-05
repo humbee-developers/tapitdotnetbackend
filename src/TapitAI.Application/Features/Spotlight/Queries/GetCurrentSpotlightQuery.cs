@@ -3,9 +3,9 @@ using Microsoft.EntityFrameworkCore;
 using TapitAI.Application.Common.Interfaces;
 using TapitAI.Application.Common.Models;
 using TapitAI.Application.DTOs.Dating;
-using TapitAI.Domain.Constants;
 using TapitAI.Domain.Entities;
 using TapitAI.Domain.Interfaces.Repositories;
+using TapitAI.Domain.Interfaces.Services;
 
 namespace TapitAI.Application.Features.Spotlight.Queries;
 
@@ -14,19 +14,33 @@ public record GetCurrentSpotlightQuery : IRequest<Result<SpotlightSessionDto?>>;
 public class GetCurrentSpotlightQueryHandler(
     IUnitOfWork uow,
     ICurrentUserService currentUser,
-    IAdminSettingService settings)
+    ISpotlightService spotlightService)
     : IRequestHandler<GetCurrentSpotlightQuery, Result<SpotlightSessionDto?>>
 {
     public async Task<Result<SpotlightSessionDto?>> Handle(GetCurrentSpotlightQuery _, CancellationToken ct)
     {
+        var userId = currentUser.UserId!;
+
         var session = await uow.Repository<SpotlightSession>().Query()
             .Include(s => s.FeedItems)
-            .Where(s => s.WatcherUserId == currentUser.UserId && s.IsActive && s.ExpiresAt > DateTime.UtcNow)
+            .Where(s => s.WatcherUserId == userId && s.IsActive && s.ExpiresAt > DateTime.UtcNow)
             .OrderByDescending(s => s.GeneratedAt)
             .FirstOrDefaultAsync(ct);
 
         if (session is null)
-            return Result<SpotlightSessionDto?>.Success(null);
+        {
+            var generated = await spotlightService.GenerateForUserAsync(userId, ct);
+            if (generated is null)
+                return Result<SpotlightSessionDto?>.Success(null);
+
+            // Reload with FeedItems navigation property populated
+            session = await uow.Repository<SpotlightSession>().Query()
+                .Include(s => s.FeedItems)
+                .FirstOrDefaultAsync(s => s.Id == generated.Id, ct);
+
+            if (session is null)
+                return Result<SpotlightSessionDto?>.Success(null);
+        }
 
         var likedUserIds = await uow.Repository<UserLike>().Query()
             .Where(ul => ul.LikerId == currentUser.UserId)

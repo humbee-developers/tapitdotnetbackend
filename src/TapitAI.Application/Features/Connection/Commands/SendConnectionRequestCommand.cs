@@ -58,6 +58,15 @@ public class SendConnectionRequestCommandHandler(
         if (establishedToday >= connectionLimit)
             return Result<ConnectionActionResultDto>.Failure($"Daily connection limit of {connectionLimit} reached.");
 
+        // Reject if either party has blocked the other
+        var isBlocked = await uow.Repository<UserBlock>().Query()
+            .AnyAsync(b =>
+                (b.BlockerUserId == senderId && b.BlockedUserId == receiverId) ||
+                (b.BlockerUserId == receiverId && b.BlockedUserId == senderId), ct);
+
+        if (isBlocked)
+            return Result<ConnectionActionResultDto>.Failure("Unable to send connection request.");
+
         var senderIsActive = await uow.Repository<Domain.Entities.Connection>().Query()
             .AnyAsync(c =>
                 (c.SenderUserId == senderId || c.ReceiverUserId == senderId)

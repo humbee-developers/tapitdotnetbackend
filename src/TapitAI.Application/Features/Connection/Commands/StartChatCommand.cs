@@ -54,6 +54,18 @@ public class StartChatCommandHandler(
             connection.SetChatChannel(channelId);
             chatChannelId = channelId;
 
+            // Replay the messages exchanged before the chat opened, in chronological order
+            var historicalMessages = new[]
+            {
+                (connection.SenderUserId,   connection.SenderInvitationMessage),
+                (connection.SenderUserId,   connection.SenderConnectionMessage),
+                (connection.ReceiverUserId, connection.ReceiverConnectionMessage),
+            };
+
+            foreach (var (msgUserId, text) in historicalMessages)
+                if (!string.IsNullOrWhiteSpace(text))
+                    await chatService.SendMessageAsync(channelId, "messaging", msgUserId, text, ct);
+
             var senderProfile = await uow.Repository<UserDatingProfile>().Query()
                 .FirstOrDefaultAsync(p => p.UserId == connection.SenderUserId, ct);
             var receiverProfile = await uow.Repository<UserDatingProfile>().Query()

@@ -34,7 +34,25 @@
       "Bash(Select-Object -ExpandProperty FullName)",
       "Bash(del \"e:\\\\Humbee Studio\\\\Clients\\\\VagKap\\\\tapitAI\\\\dotnetbackend\\\\src\\\\TapitAI.Application\\\\Features\\\\Chat\\\\Queries\\\\GetChatTokenQuery.cs\")",
       "PowerShell(cd \"e:\\\\Humbee Studio\\\\Clients\\\\VagKap\\\\tapitAI\\\\dotnetbackend\"; dotnet build src/TapitAI.API/TapitAI.API.csproj -c Debug 2>&1 | Where-Object { $_ -match \"error CS|Build succeeded|Error\\\\\\(s\\\\\\)\" } | Select-Object -Last 10)",
-      "PowerShell(cd \"e:\\\\Humbee Studio\\\\Clients\\\\VagKap\\\\tapitAI\\\\dotnetbackend\"; dotnet build src/TapitAI.API/TapitAI.API.csproj -c Debug 2>&1 | Where-Object { $_ -match \"error CS\" } | Select-Object -First 10)"
+      "PowerShell(cd \"e:\\\\Humbee Studio\\\\Clients\\\\VagKap\\\\tapitAI\\\\dotnetbackend\"; dotnet build src/TapitAI.API/TapitAI.API.csproj -c Debug 2>&1 | Where-Object { $_ -match \"error CS\" } | Select-Object -First 10)",
+      "Read(//c/Users/Patel/.nuget/packages/**)",
+      "PowerShell($dll = \"e:\\\\Humbee Studio\\\\Clients\\\\VagKap\\\\tapitAI\\\\dotnetbackend\\\\src\\\\TapitAI.API\\\\bin\\\\Debug\\\\net10.0\\\\stream-chat-net.dll\"; $bytes = [System.IO.File]::ReadAllBytes\\($dll\\); $asm = [System.Reflection.Assembly]::Load\\($bytes\\); $asm.GetTypes\\(\\) | Where-Object { $_.IsInterface } | Select-Object Name)",
+      "PowerShell(dotnet script --version 2>&1; Write-Host \"---\"; $dll = \"e:\\\\Humbee Studio\\\\Clients\\\\VagKap\\\\tapitAI\\\\dotnetbackend\\\\src\\\\TapitAI.API\\\\bin\\\\Debug\\\\net10.0\\\\stream-chat-net.dll\"; [System.Reflection.Assembly]::LoadWithPartialName\\(\"stream-chat-net\"\\))",
+      "Read(//c/Users/Patel/.nuget/**)",
+      "Read(//c/Users/Patel/AppData/**)",
+      "PowerShell($p = [System.AppDomain]::CurrentDomain.BaseDirectory; Write-Host $p; Get-ChildItem \"e:\\\\Humbee Studio\\\\Clients\\\\VagKap\\\\tapitAI\\\\dotnetbackend\" -Recurse -Filter \"stream-chat-net.dll\" | Select-Object FullName)",
+      "PowerShell($assets = Get-Content \"e:\\\\Humbee Studio\\\\Clients\\\\VagKap\\\\tapitAI\\\\dotnetbackend\\\\src\\\\TapitAI.Infrastructure\\\\obj\\\\project.assets.json\" -Raw | ConvertFrom-Json; $assets.libraries.PSObject.Properties.Name | Where-Object { $_ -match \"stream\" -or $_ -match \"Stream\" })",
+      "PowerShell($assets = Get-Content \"e:\\\\Humbee Studio\\\\Clients\\\\VagKap\\\\tapitAI\\\\dotnetbackend\\\\src\\\\TapitAI.Infrastructure\\\\obj\\\\project.assets.json\" -Raw | ConvertFrom-Json; $packageFolders = $assets.packageFolders.PSObject.Properties.Name; $packageFolders)",
+      "PowerShell($dllPath = \"C:\\\\Users\\\\Patel\\\\.nuget\\\\packages\\\\stream-chat-net\\\\2.20.0\\\\lib\\\\netstandard2.1\\\\stream-chat-net.dll\"; if \\(Test-Path $dllPath\\) { $bytes = [IO.File]::ReadAllBytes\\($dllPath\\); $asm = [Reflection.Assembly]::Load\\($bytes\\); $types = $asm.GetTypes\\(\\); $icc = $types | Where-Object { $_.Name -eq \"IChannelClient\" }; $icc.GetMethods\\(\\) | Select-Object Name } else { \"not found\" })",
+      "PowerShell($p = \"C:\\\\Users\\\\Patel\\\\.nuget\\\\packages\\\\stream-chat-net\\\\2.20.0\\\\lib\\\\netstandard2.1\\\\stream-chat-net.dll\"; Add-Type -Path $p -ErrorAction SilentlyContinue; [StreamChat.Clients.IStreamClientFactory].GetMethods\\(\\) | Select-Object Name)",
+      "PowerShell(Get-Process | Where-Object { $_.ProcessName -eq \"dotnet\" } | Select-Object Id; netstat -ano | findstr \":3000\" | findstr \"LISTENING\")",
+      "PowerShell(netstat -ano | findstr \":3000\" | findstr \"LISTENING\"; Get-Process | Where-Object { $_.ProcessName -eq \"dotnet\" } | Select-Object Id)",
+      "PowerShell(cd \"e:\\\\Humbee Studio\\\\Clients\\\\VagKap\\\\tapitAI\\\\dotnetbackend\"; dotnet build src/TapitAI.API 2>&1 | Where-Object { $_ -match \"error\" } | Select-Object -First 20)",
+      "PowerShell(Stop-Process -Id 49836 -Force -ErrorAction SilentlyContinue; Start-Sleep -Milliseconds 500; netstat -ano | findstr \":3000\" | ForEach-Object { $pid = \\($_ -split '\\\\s+'\\)[-1]; if \\($pid -match '^\\\\d+$'\\) { Stop-Process -Id $pid -Force -ErrorAction SilentlyContinue } }; Write-Host \"Done\")",
+      "PowerShell(netstat -ano | findstr \":3000\" | ForEach-Object { $parts = $_ -split '\\\\s+'; $p = $parts[-1]; if \\($p -match '^\\\\d+$' -and $p -ne '0'\\) { Stop-Process -Id $p -Force -ErrorAction SilentlyContinue; Write-Host \"Killed $p\" } })",
+      "PowerShell(cd \"e:\\\\Humbee Studio\\\\Clients\\\\VagKap\\\\tapitAI\\\\dotnetbackend\"; dotnet build src/TapitAI.API 2>&1 | Where-Object { $_ -match \"error|succeeded|failed\" } | Select-Object -Last 5)",
+      "PowerShell(cd \"e:\\\\Humbee Studio\\\\Clients\\\\VagKap\\\\tapitAI\\\\dotnetbackend\"; dotnet build src/TapitAI.API 2>&1 | Where-Object { $_ -match \"error\" -and $_ -notmatch \"NU1608|NU1510|CS0618|warning\" } | Select-Object -First 20)",
+      "PowerShell(cd \"e:\\\\Humbee Studio\\\\Clients\\\\VagKap\\\\tapitAI\\\\dotnetbackend\"; dotnet build src/TapitAI.API 2>&1 | Where-Object { $_ -match \"error\" -and $_ -notmatch \"NU1608|NU1510|CS0618|warning\" } | Select-Object -Last 5)"
     ],
     "additionalDirectories": [
       "C:\\Users\\Patel\\.claude\\projects\\e--Humbee-Studio-Clients-VagKap-tapitAI-dotnetbackend"

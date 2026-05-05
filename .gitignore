@@ -151,3 +151,7 @@ node_modules/
 
 # SonarQube
 .sonarqube/
+src/TapitAI.API/appsettings.Development.json
+src/TapitAI.API/appsettings.json
+src/TapitAI.API/bin/Debug/net10.0/appsettings.Development.json
+src/TapitAI.API/bin/Debug/net10.0/appsettings.json

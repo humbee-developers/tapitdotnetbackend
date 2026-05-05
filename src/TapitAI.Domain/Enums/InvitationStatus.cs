@@ -6,5 +6,6 @@ public enum InvitationStatus
     Withdrawn = 2,
     Rejected = 3,
     Accepted = 4,
-    Expired = 5
+    Expired = 5,
+    Blocked = 6
 }

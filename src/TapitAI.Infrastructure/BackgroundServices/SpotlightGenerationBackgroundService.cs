@@ -56,8 +56,9 @@ public class SpotlightGenerationBackgroundService(
             .Select(p => p.UserId)
             .ToListAsync(ct);
 
+        var staleThreshold = DateTime.UtcNow.AddMinutes(-30);
         var userLocations = await db.Set<UserLocation>()
-            .Where(ul => profiledUserIds.Contains(ul.UserId) && ul.IsLatest)
+            .Where(ul => profiledUserIds.Contains(ul.UserId) && ul.IsLatest && ul.CreatedAt >= staleThreshold)
             .ToListAsync(ct);
 
         var placeholders = await db.Set<PlaceholderPhoto>()

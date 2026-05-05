@@ -20,12 +20,20 @@ public class GetChatChannelsQueryHandler(
     {
         var userId = currentUser.UserId!;
 
+        var blockedUserIds = await uow.Repository<UserBlock>().Query()
+            .AsNoTracking()
+            .Where(b => b.BlockerUserId == userId || b.BlockedUserId == userId)
+            .Select(b => b.BlockerUserId == userId ? b.BlockedUserId : b.BlockerUserId)
+            .ToHashSetAsync(ct);
+
         var connections = await uow.Repository<Domain.Entities.Connection>().Query()
             .Where(c =>
                 (c.SenderUserId == userId || c.ReceiverUserId == userId)
                 && c.ChatChannelId != null
                 && c.SenderConnectionStatus == ParticipantConnectionStatus.Connect
-                && c.ReceiverConnectionStatus == ParticipantConnectionStatus.Connect)
+                && c.ReceiverConnectionStatus == ParticipantConnectionStatus.Connect
+                && !blockedUserIds.Contains(c.SenderUserId)
+                && !blockedUserIds.Contains(c.ReceiverUserId))
             .OrderByDescending(c => c.ConnectedAt)
             .ToListAsync(ct);
 

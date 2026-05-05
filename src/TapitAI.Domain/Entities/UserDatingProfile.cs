@@ -15,6 +15,7 @@ public class UserDatingProfile : AggregateRoot
     public string[] Lifestyle { get; private set; } = [];
     public string[] LookingFor { get; private set; } = [];
     public string? Bio { get; private set; }
+    public bool IsSpotlightVisible { get; private set; } = true;
     public Guid? PrimaryPhotoId { get; private set; }
 
     private readonly List<ProfilePhoto> _photos = new();
@@ -77,6 +78,7 @@ public class UserDatingProfile : AggregateRoot
     public void UpdateLifestyle(string[] lifestyle) => Lifestyle = lifestyle;
     public void UpdateLookingFor(string[] lookingFor) => LookingFor = lookingFor;
     public void UpdateBio(string? bio) => Bio = bio;
+    public void SetSpotlightVisibility(bool visible) => IsSpotlightVisible = visible;
 
     public void SetPrimaryPhoto(Guid? photoId) => PrimaryPhotoId = photoId;
 

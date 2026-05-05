@@ -16,6 +16,7 @@ public class UserDatingProfileConfiguration : IEntityTypeConfiguration<UserDatin
         builder.Property(p => p.Gender).IsRequired().HasMaxLength(50);
         builder.Property(p => p.AgeRange).IsRequired().HasMaxLength(20);
         builder.Property(p => p.Bio).HasMaxLength(1000);
+        builder.Property(p => p.IsSpotlightVisible).HasDefaultValue(true);
 
         builder.Property(p => p.GenderPreference).HasColumnType("text[]");
         builder.Property(p => p.HeightPreference).HasColumnType("text[]");

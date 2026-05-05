@@ -22,6 +22,7 @@ using TapitAI.Infrastructure.Services;
 using TapitAI.Infrastructure.Services.Cache;
 using TapitAI.Infrastructure.Services.Chat;
 using TapitAI.Infrastructure.Services.Discovery;
+using TapitAI.Infrastructure.Services.Spotlight;
 using TapitAI.Infrastructure.Services.Firebase;
 using TapitAI.Infrastructure.Services.Media;
 using TapitAI.Infrastructure.Services.Media.Providers;
@@ -217,6 +218,7 @@ public static class DependencyInjection
     private static void AddDatingServices(this IServiceCollection services)
     {
         services.AddScoped<IDiscoveryService, DiscoveryService>();
+        services.AddScoped<ISpotlightService, SpotlightService>();
         services.AddScoped<IFirebaseService, FirebaseService>();
         services.AddScoped<IRealTimeService, SignalRNotificationService>();
     }

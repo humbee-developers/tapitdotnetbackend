@@ -12,4 +12,5 @@ public interface IChatService
     Task RemoveMembersAsync(string channelId, string channelType, IEnumerable<string> userIds, CancellationToken ct = default);
     Task DeleteChannelAsync(string channelId, string channelType, CancellationToken ct = default);
     Task UpsertUserAsync(string userId, string userName, string? imageUrl = null, CancellationToken ct = default);
+    Task SendMessageAsync(string channelId, string channelType, string senderId, string text, CancellationToken ct = default);
 }

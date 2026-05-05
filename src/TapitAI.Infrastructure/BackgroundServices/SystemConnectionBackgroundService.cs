@@ -64,8 +64,9 @@ public class SystemConnectionBackgroundService(
             .Select(p => p.UserId)
             .ToListAsync(ct);
 
+        var staleThreshold = DateTime.UtcNow.AddMinutes(-30);
         var locations = await db.Set<UserLocation>()
-            .Where(ul => profiledUserIds.Contains(ul.UserId) && ul.IsLatest)
+            .Where(ul => profiledUserIds.Contains(ul.UserId) && ul.IsLatest && ul.CreatedAt >= staleThreshold)
             .ToListAsync(ct);
 
         var profiles = await db.Set<UserDatingProfile>()
@@ -82,6 +83,16 @@ public class SystemConnectionBackgroundService(
             .Select(c => new[] { c.SenderUserId, c.ReceiverUserId })
             .ToListAsync(ct);
         var blockedUserIds = usersWithActive.SelectMany(x => x).ToHashSet();
+
+        // Block pairs: if A blocked B or B blocked A, skip this pair entirely
+        var blockPairs = await db.Set<UserBlock>()
+            .Where(b => profiledUserIds.Contains(b.BlockerUserId) || profiledUserIds.Contains(b.BlockedUserId))
+            .Select(b => new { b.BlockerUserId, b.BlockedUserId })
+            .ToListAsync(ct);
+        var isBlockedPair = (string a, string b) =>
+            blockPairs.Any(p =>
+                (p.BlockerUserId == a && p.BlockedUserId == b) ||
+                (p.BlockerUserId == b && p.BlockedUserId == a));
 
         var alreadyPaired = new HashSet<string>();
         var connectionsCreated = 0;
@@ -127,6 +138,8 @@ public class SystemConnectionBackgroundService(
                 var iAmInterested = senderInterestedGenders.Count == 0 || senderInterestedGenders.Contains(theirGender);
                 var theyAreInterested = theirInterested.Count == 0 || theirInterested.Contains(senderGender);
                 if (!iAmInterested && !theyAreInterested) continue;
+
+                if (isBlockedPair(senderLocation.UserId, receiverLocation.UserId)) continue;
 
                 var receiverReceiveToday = await db.Set<Connection>()
                     .CountAsync(c => c.ReceiverUserId == receiverLocation.UserId && c.InvitedAt.Date == today, ct);
