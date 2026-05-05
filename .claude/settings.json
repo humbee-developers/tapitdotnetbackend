@@ -59,7 +59,8 @@
       "PowerShell(tail -20)",
       "PowerShell(Stop-Process -Id 38948 -Force -ErrorAction SilentlyContinue)",
       "PowerShell(Stop-Process -Name \"TapitAI.API\" -Force -ErrorAction SilentlyContinue)",
-      "PowerShell(dotnet build \"e:\\\\Humbee Studio\\\\Clients\\\\VagKap\\\\tapitAI\\\\dotnetbackend\\\\src\\\\TapitAI.Infrastructure\" 2>&1)"
+      "PowerShell(dotnet build \"e:\\\\Humbee Studio\\\\Clients\\\\VagKap\\\\tapitAI\\\\dotnetbackend\\\\src\\\\TapitAI.Infrastructure\" 2>&1)",
+      "PowerShell(dotnet build \"e:\\\\Humbee Studio\\\\Clients\\\\VagKap\\\\tapitAI\\\\dotnetbackend\\\\src\\\\TapitAI.Application\" 2>&1)"
     ],
     "additionalDirectories": [
       "C:\\Users\\Patel\\.claude\\projects\\e--Humbee-Studio-Clients-VagKap-tapitAI-dotnetbackend"
