@@ -51,7 +51,8 @@ public class SystemConnectionBackgroundService(
         var receiveLimit = await settings.GetIntAsync(AdminSettingKeys.ConnectionRequestsReceivePerDay, 5, ct);
         var expiryMinutes = await settings.GetIntAsync(AdminSettingKeys.ConnectionExpiryMinutes, 30, ct);
 
-        var today = DateTime.UtcNow.Date;
+        var todayStart = DateTime.UtcNow.Date;
+        var todayEnd = todayStart.AddDays(1);
         var radiusMeters = connectionRadius * 1609.34;
         var staleMinutes = await settings.GetIntAsync(AdminSettingKeys.LocationStaleMinutes, 30, ct);
         var staleThreshold = DateTime.UtcNow.AddMinutes(-staleMinutes);
@@ -78,15 +79,21 @@ public class SystemConnectionBackgroundService(
             .Where(ul => profiledUserIds.Contains(ul.UserId) && ul.IsLatest && ul.CreatedAt >= staleThreshold)
             .ToListAsync(ct);
 
+        if (locations.Count == 0) return;
+
+        var locationUserIds = locations.Select(l => l.UserId).ToHashSet();
+
+        // Load profiles only for users who have fresh locations (not the full profiled pool)
         var profiles = await db.Set<UserDatingProfile>()
-            .Where(p => profiledUserIds.Contains(p.UserId))
+            .Where(p => locationUserIds.Contains(p.UserId))
             .ToListAsync(ct);
 
         var placeholders = await db.Set<PlaceholderPhoto>()
             .Where(pp => pp.IsActive)
             .ToListAsync(ct);
 
-        var usersWithActive = await db.Set<Connection>()
+        // Users in an active (non-dead) connection cannot be matched
+        var usersWithActiveConn = await db.Set<Connection>()
             .Where(c => c.InvitationStatus == InvitationStatus.Pending
                      || (c.InvitationStatus == InvitationStatus.Accepted
                          && c.ConnectedAt == null
@@ -94,11 +101,11 @@ public class SystemConnectionBackgroundService(
                              || c.ReceiverConnectionStatus == ParticipantConnectionStatus.Pending)))
             .Select(c => new[] { c.SenderUserId, c.ReceiverUserId })
             .ToListAsync(ct);
-        var blockedUserIds = usersWithActive.SelectMany(x => x).ToHashSet();
+        var activeConnectionUserIds = usersWithActiveConn.SelectMany(x => x).ToHashSet();
 
         // Block pairs: if A blocked B or B blocked A, skip this pair entirely
         var blockPairs = await db.Set<UserBlock>()
-            .Where(b => profiledUserIds.Contains(b.BlockerUserId) || profiledUserIds.Contains(b.BlockedUserId))
+            .Where(b => locationUserIds.Contains(b.BlockerUserId) || locationUserIds.Contains(b.BlockedUserId))
             .Select(b => new { b.BlockerUserId, b.BlockedUserId })
             .ToListAsync(ct);
         var isBlockedPair = (string a, string b) =>
@@ -106,26 +113,67 @@ public class SystemConnectionBackgroundService(
                 (p.BlockerUserId == a && p.BlockedUserId == b) ||
                 (p.BlockerUserId == b && p.BlockedUserId == a));
 
+        // Pre-load today's sent counts per user — avoids one DB query per sender in the outer loop
+        var sentTodayIds = await db.Set<Connection>()
+            .Where(c => c.InvitedAt >= todayStart && c.InvitedAt < todayEnd
+                     && locationUserIds.Contains(c.SenderUserId))
+            .Select(c => c.SenderUserId)
+            .ToListAsync(ct);
+        var sentToday = sentTodayIds.GroupBy(id => id).ToDictionary(g => g.Key, g => g.Count());
+
+        // Pre-load today's received counts per user — avoids one DB query per candidate in the inner loop
+        var receivedTodayIds = await db.Set<Connection>()
+            .Where(c => c.InvitedAt >= todayStart && c.InvitedAt < todayEnd
+                     && locationUserIds.Contains(c.ReceiverUserId))
+            .Select(c => c.ReceiverUserId)
+            .ToListAsync(ct);
+        var receivedToday = receivedTodayIds.GroupBy(id => id).ToDictionary(g => g.Key, g => g.Count());
+
+        // Pre-load today's completed chat counts per user — avoids one DB query per sender in the outer loop
+        var chatsTodayPairs = await db.Set<Connection>()
+            .Where(c => c.ConnectedAt.HasValue
+                     && c.ConnectedAt.Value >= todayStart && c.ConnectedAt.Value < todayEnd
+                     && (locationUserIds.Contains(c.SenderUserId) || locationUserIds.Contains(c.ReceiverUserId)))
+            .Select(c => new { c.SenderUserId, c.ReceiverUserId })
+            .ToListAsync(ct);
+        var chatsToday = new Dictionary<string, int>();
+        foreach (var chat in chatsTodayPairs)
+        {
+            chatsToday[chat.SenderUserId] = chatsToday.GetValueOrDefault(chat.SenderUserId) + 1;
+            chatsToday[chat.ReceiverUserId] = chatsToday.GetValueOrDefault(chat.ReceiverUserId) + 1;
+        }
+
+        // Pre-load all live connection pairs as a HashSet — avoids one DB query per candidate pair in the inner loop.
+        // Excluded (allow re-pair): invitation expired naturally, invitation withdrawn, decision phase timed out for both.
+        // Included (block re-pair): pending invitation, rejected invitation, someone actively passed, connected to chat.
+        var livePairRows = await db.Set<Connection>()
+            .Where(c =>
+                (locationUserIds.Contains(c.SenderUserId) || locationUserIds.Contains(c.ReceiverUserId))
+                && c.InvitationStatus != InvitationStatus.Withdrawn
+                && c.InvitationStatus != InvitationStatus.Expired
+                && !(c.InvitationStatus == InvitationStatus.Accepted
+                     && c.ConnectedAt == null
+                     && c.SenderConnectionStatus == ParticipantConnectionStatus.Expired
+                     && c.ReceiverConnectionStatus == ParticipantConnectionStatus.Expired))
+            .Select(c => new { c.SenderUserId, c.ReceiverUserId })
+            .ToListAsync(ct);
+        var livePairKeys = livePairRows
+            .Select(p => PairKey(p.SenderUserId, p.ReceiverUserId))
+            .ToHashSet();
+
         var alreadyPaired = new HashSet<string>();
         var connectionsCreated = 0;
 
         foreach (var senderLocation in locations.OrderBy(_ => Random.Shared.Next()))
         {
             if (alreadyPaired.Contains(senderLocation.UserId)) continue;
-            if (blockedUserIds.Contains(senderLocation.UserId)) continue;
+            if (activeConnectionUserIds.Contains(senderLocation.UserId)) continue;
 
             var senderProfile = profiles.FirstOrDefault(p => p.UserId == senderLocation.UserId);
             if (senderProfile is null) continue;
 
-            var senderSentToday = await db.Set<Connection>()
-                .CountAsync(c => c.SenderUserId == senderLocation.UserId && c.InvitedAt.Date == today, ct);
-            if (senderSentToday >= sendLimit) continue;
-
-            var senderConnectionsToday = await db.Set<Connection>()
-                .CountAsync(c =>
-                    (c.SenderUserId == senderLocation.UserId || c.ReceiverUserId == senderLocation.UserId)
-                    && c.ConnectedAt.HasValue && c.ConnectedAt.Value.Date == today, ct);
-            if (senderConnectionsToday >= connectionLimit) continue;
+            if (sentToday.GetValueOrDefault(senderLocation.UserId) >= sendLimit) continue;
+            if (chatsToday.GetValueOrDefault(senderLocation.UserId) >= connectionLimit) continue;
 
             var senderInterestedGenders = new HashSet<string>(senderProfile.GenderPreference, StringComparer.OrdinalIgnoreCase);
             var senderGender = senderProfile.Gender;
@@ -134,7 +182,7 @@ public class SystemConnectionBackgroundService(
                 .Where(ul =>
                     ul.UserId != senderLocation.UserId
                     && !alreadyPaired.Contains(ul.UserId)
-                    && !blockedUserIds.Contains(ul.UserId)
+                    && !activeConnectionUserIds.Contains(ul.UserId)
                     && CalculateDistance(senderLocation.Location.Y, senderLocation.Location.X,
                         ul.Location.Y, ul.Location.X) <= radiusMeters)
                 .ToList();
@@ -153,26 +201,9 @@ public class SystemConnectionBackgroundService(
 
                 if (isBlockedPair(senderLocation.UserId, receiverLocation.UserId)) continue;
 
-                var receiverReceiveToday = await db.Set<Connection>()
-                    .CountAsync(c => c.ReceiverUserId == receiverLocation.UserId && c.InvitedAt.Date == today, ct);
-                if (receiverReceiveToday >= receiveLimit) continue;
+                if (receivedToday.GetValueOrDefault(receiverLocation.UserId) >= receiveLimit) continue;
 
-                // Skip if a live connection exists between this pair.
-                // Terminal (Rejected, Withdrawn, Expired) and dead Accepted (decision phase over,
-                // no chat started) allow re-pairing; everything else does not.
-                var existingConn = await db.Set<Connection>()
-                    .AnyAsync(c =>
-                        ((c.SenderUserId == senderLocation.UserId && c.ReceiverUserId == receiverLocation.UserId)
-                        || (c.SenderUserId == receiverLocation.UserId && c.ReceiverUserId == senderLocation.UserId))
-                        && c.InvitationStatus != InvitationStatus.Rejected
-                        && c.InvitationStatus != InvitationStatus.Withdrawn
-                        && c.InvitationStatus != InvitationStatus.Expired
-                        && !(c.InvitationStatus == InvitationStatus.Accepted
-                             && c.ConnectedAt == null
-                             && c.SenderConnectionStatus != ParticipantConnectionStatus.Pending
-                             && c.ReceiverConnectionStatus != ParticipantConnectionStatus.Pending), ct);
-
-                if (existingConn) continue;
+                if (livePairKeys.Contains(PairKey(senderLocation.UserId, receiverLocation.UserId))) continue;
 
                 var message = PickupLineProvider.GetRandom();
                 var connection = Connection.Create(
@@ -242,6 +273,9 @@ public class SystemConnectionBackgroundService(
         if (connectionsCreated > 0)
             logger.LogInformation("System created {Count} connection requests", connectionsCreated);
     }
+
+    private static string PairKey(string a, string b) =>
+        string.Compare(a, b, StringComparison.Ordinal) < 0 ? $"{a}:{b}" : $"{b}:{a}";
 
     private static double CalculateDistance(double lat1, double lon1, double lat2, double lon2)
     {
