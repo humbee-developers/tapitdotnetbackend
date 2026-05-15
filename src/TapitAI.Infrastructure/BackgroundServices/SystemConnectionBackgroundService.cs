@@ -53,6 +53,8 @@ public class SystemConnectionBackgroundService(
 
         var today = DateTime.UtcNow.Date;
         var radiusMeters = connectionRadius * 1609.34;
+        var staleMinutes = await settings.GetIntAsync(AdminSettingKeys.LocationStaleMinutes, 30, ct);
+        var staleThreshold = DateTime.UtcNow.AddMinutes(-staleMinutes);
 
         // Users without a TapStatus record are TapIn by default — only exclude explicit TapOut
         var tappedOutUserIds = await db.Set<TapStatus>()
@@ -60,12 +62,18 @@ public class SystemConnectionBackgroundService(
             .Select(ts => ts.UserId)
             .ToHashSetAsync(ct);
 
+        // Users with at least one active device token are considered logged in.
+        var loggedInUserIds = await db.Set<UserDevice>()
+            .Where(d => d.IsActive)
+            .Select(d => d.UserId)
+            .Distinct()
+            .ToHashSetAsync(ct);
+
         var profiledUserIds = await db.Set<UserDatingProfile>()
-            .Where(p => !tappedOutUserIds.Contains(p.UserId))
+            .Where(p => !tappedOutUserIds.Contains(p.UserId) && loggedInUserIds.Contains(p.UserId))
             .Select(p => p.UserId)
             .ToListAsync(ct);
 
-        var staleThreshold = DateTime.UtcNow.AddMinutes(-30);
         var locations = await db.Set<UserLocation>()
             .Where(ul => profiledUserIds.Contains(ul.UserId) && ul.IsLatest && ul.CreatedAt >= staleThreshold)
             .ToListAsync(ct);
@@ -146,11 +154,15 @@ public class SystemConnectionBackgroundService(
                     .CountAsync(c => c.ReceiverUserId == receiverLocation.UserId && c.InvitedAt.Date == today, ct);
                 if (receiverReceiveToday >= receiveLimit) continue;
 
+                // Skip if any non-terminal connection exists between this pair (mirrors DiscoveryService rule).
+                // Terminal statuses (Rejected, Withdrawn, Expired) allow re-pairing; everything else does not.
                 var existingConn = await db.Set<Connection>()
                     .AnyAsync(c =>
                         ((c.SenderUserId == senderLocation.UserId && c.ReceiverUserId == receiverLocation.UserId)
                         || (c.SenderUserId == receiverLocation.UserId && c.ReceiverUserId == senderLocation.UserId))
-                        && c.InvitationStatus == InvitationStatus.Pending, ct);
+                        && c.InvitationStatus != InvitationStatus.Rejected
+                        && c.InvitationStatus != InvitationStatus.Withdrawn
+                        && c.InvitationStatus != InvitationStatus.Expired, ct);
 
                 if (existingConn) continue;
 

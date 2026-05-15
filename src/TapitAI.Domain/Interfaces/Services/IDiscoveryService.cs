@@ -8,6 +8,7 @@ public record NearbyUserResult(
     string PlaceholderPhotoUrl,
     double DistanceMiles,
     bool CanSendConnectionRequest,
+    string? CannotConnectReason,
     Guid? ExistingConnectionId,
     string? ExistingConnectionStatus
 );

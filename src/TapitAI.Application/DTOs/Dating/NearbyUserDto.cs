@@ -9,6 +9,7 @@ public class NearbyUserDto
     public string PlaceholderPhotoUrl { get; set; } = null!;
     public double DistanceMiles { get; set; }
     public bool CanSendConnectionRequest { get; set; }
+    public string? CannotConnectReason { get; set; }
     public Guid? ExistingConnectionId { get; set; }
     public string? ExistingConnectionStatus { get; set; }
 }

@@ -51,12 +51,19 @@ public class SpotlightGenerationBackgroundService(
             .Select(ts => ts.UserId)
             .ToHashSetAsync(ct);
 
+        var loggedInUserIds = await db.Set<UserDevice>()
+            .Where(d => d.IsActive)
+            .Select(d => d.UserId)
+            .Distinct()
+            .ToHashSetAsync(ct);
+
         var profiledUserIds = await db.Set<UserDatingProfile>()
-            .Where(p => !tappedOutUserIds.Contains(p.UserId))
+            .Where(p => !tappedOutUserIds.Contains(p.UserId) && loggedInUserIds.Contains(p.UserId))
             .Select(p => p.UserId)
             .ToListAsync(ct);
 
-        var staleThreshold = DateTime.UtcNow.AddMinutes(-30);
+        var staleMinutes = await settings.GetIntAsync(AdminSettingKeys.LocationStaleMinutes, 30, ct);
+        var staleThreshold = DateTime.UtcNow.AddMinutes(-staleMinutes);
         var userLocations = await db.Set<UserLocation>()
             .Where(ul => profiledUserIds.Contains(ul.UserId) && ul.IsLatest && ul.CreatedAt >= staleThreshold)
             .ToListAsync(ct);
@@ -133,7 +140,7 @@ public class SpotlightGenerationBackgroundService(
                     candidates.AddRange(globalCandidates);
                 }
 
-                // Filter by gender compatibility
+                // Filter by gender compatibility — OR logic, empty preference = open to everyone
                 var compatible = candidates
                     .Where(c =>
                     {
@@ -141,7 +148,9 @@ public class SpotlightGenerationBackgroundService(
                         if (cp is null) return false;
                         var theirGender = cp.Gender;
                         var theirInterested = new HashSet<string>(cp.GenderPreference, StringComparer.OrdinalIgnoreCase);
-                        return watcherInterestedGenders.Contains(theirGender) && theirInterested.Contains(watcherGender);
+                        var iAmInterested = watcherInterestedGenders.Count == 0 || watcherInterestedGenders.Contains(theirGender);
+                        var theyAreInterested = theirInterested.Count == 0 || theirInterested.Contains(watcherGender);
+                        return iAmInterested || theyAreInterested;
                     })
                     .Take(maxUsers)
                     .ToList();

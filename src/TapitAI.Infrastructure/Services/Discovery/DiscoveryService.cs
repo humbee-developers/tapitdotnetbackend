@@ -37,25 +37,26 @@ public class DiscoveryService(AppDbContext db, IAdminSettingService settings, IL
 
         var connectionLimit = await settings.GetIntAsync(AdminSettingKeys.ConnectionsPerDayLimit, 3, ct);
         var minUsersThreshold = await settings.GetIntAsync(AdminSettingKeys.DiscoveryMinUsersThreshold, 5, ct);
+        var staleMinutes = await settings.GetIntAsync(AdminSettingKeys.LocationStaleMinutes, 30, ct);
         var today = DateTime.UtcNow.Date;
         var radiusMeters = radiusMiles * 1609.34;
 
         var myGenderPreference = new HashSet<string>(myProfile.GenderPreference, StringComparer.OrdinalIgnoreCase);
 
-        // Raw PostGIS query for nearby users
+        // Raw PostGIS query for nearby users — {4} = stale window in minutes (integer, no injection risk)
         var nearbyRaw = await db.Set<UserLocation>()
             .FromSqlRaw(@"
                 SELECT ul.* FROM ""UserLocations"" ul
                 WHERE ul.""IsLatest"" = true
                 AND ul.""UserId"" != {0}
-                AND ul.""CreatedAt"" >= NOW() - INTERVAL '30 minutes'
+                AND ul.""CreatedAt"" >= NOW() - ({4} * INTERVAL '1 minute')
                 AND ST_DWithin(
                     ul.""Location""::geography,
                     ST_SetSRID(ST_MakePoint({1}, {2}), 4326)::geography,
                     {3}
                 )
                 ORDER BY ST_Distance(ul.""Location""::geography, ST_SetSRID(ST_MakePoint({1}, {2}), 4326)::geography)",
-                requestingUserId, myLocation.Location.X, myLocation.Location.Y, radiusMeters)
+                requestingUserId, myLocation.Location.X, myLocation.Location.Y, radiusMeters, staleMinutes)
             .AsNoTracking()
             .ToListAsync(ct);
 
@@ -70,9 +71,9 @@ public class DiscoveryService(AppDbContext db, IAdminSettingService settings, IL
                     SELECT ul.* FROM ""UserLocations"" ul
                     WHERE ul.""IsLatest"" = true
                     AND ul.""UserId"" != {0}
-                    AND ul.""CreatedAt"" >= NOW() - INTERVAL '30 minutes'
+                    AND ul.""CreatedAt"" >= NOW() - ({3} * INTERVAL '1 minute')
                     ORDER BY ST_Distance(ul.""Location""::geography, ST_SetSRID(ST_MakePoint({1}, {2}), 4326)::geography)",
-                    requestingUserId, myLocation.Location.X, myLocation.Location.Y)
+                    requestingUserId, myLocation.Location.X, myLocation.Location.Y, staleMinutes)
                 .AsNoTracking()
                 .ToListAsync(ct);
 
@@ -104,6 +105,13 @@ public class DiscoveryService(AppDbContext db, IAdminSettingService settings, IL
             .AsNoTracking()
             .Where(ts => nearbyUserIds.Contains(ts.UserId) && ts.Status == TapStatusEnum.TapOut)
             .Select(ts => ts.UserId)
+            .ToHashSetAsync(ct);
+
+        // Exclude users who have logged out (no active device token).
+        var loggedInUserIds = await db.Set<UserDevice>()
+            .AsNoTracking()
+            .Where(d => nearbyUserIds.Contains(d.UserId) && d.IsActive)
+            .Select(d => d.UserId)
             .ToHashSetAsync(ct);
 
         var placeholders = await db.Set<PlaceholderPhoto>()
@@ -168,6 +176,12 @@ public class DiscoveryService(AppDbContext db, IAdminSettingService settings, IL
                 continue;
             }
 
+            if (!loggedInUserIds.Contains(location.UserId))
+            {
+                logger.LogDebug("[Discovery] Filtered {UserId}: logged out (no active device).", location.UserId);
+                continue;
+            }
+
             if (blockRelations.Contains(location.UserId))
             {
                 logger.LogDebug("[Discovery] Filtered {UserId}: blocked.", location.UserId);
@@ -199,12 +213,22 @@ public class DiscoveryService(AppDbContext db, IAdminSettingService settings, IL
             var existingConn = existingConnections.FirstOrDefault(c =>
                 c.SenderUserId == location.UserId || c.ReceiverUserId == location.UserId);
 
+            var existingConnBlocks = existingConn is not null
+                && existingConn.InvitationStatus != InvitationStatus.Rejected
+                && existingConn.InvitationStatus != InvitationStatus.Withdrawn
+                && existingConn.InvitationStatus != InvitationStatus.Expired;
+
             var canSend = !iHaveActiveConnection
                 && !nearbyActiveUserIds.Contains(location.UserId)
                 && myConnectionsToday < connectionLimit
-                && (existingConn is null || existingConn.InvitationStatus == InvitationStatus.Rejected
-                    || existingConn.InvitationStatus == InvitationStatus.Withdrawn
-                    || existingConn.InvitationStatus == InvitationStatus.Expired);
+                && !existingConnBlocks;
+
+            string? cannotConnectReason = canSend ? null
+                : iHaveActiveConnection                     ? "YOU_HAVE_ACTIVE_CONNECTION"
+                : nearbyActiveUserIds.Contains(location.UserId) ? "THEY_HAVE_ACTIVE_CONNECTION"
+                : myConnectionsToday >= connectionLimit     ? "DAILY_LIMIT_REACHED"
+                : existingConnBlocks                        ? "ALREADY_CONNECTED"
+                : null;
 
             var placeholder = GetPlaceholder(placeholders, theirGender);
 
@@ -216,6 +240,7 @@ public class DiscoveryService(AppDbContext db, IAdminSettingService settings, IL
                 placeholder,
                 distanceMiles,
                 canSend,
+                cannotConnectReason,
                 existingConn?.Id,
                 existingConn?.InvitationStatus.ToString()
             ));

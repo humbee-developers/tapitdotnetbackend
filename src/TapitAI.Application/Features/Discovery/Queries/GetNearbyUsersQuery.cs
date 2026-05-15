@@ -31,6 +31,7 @@ public class GetNearbyUsersQueryHandler(
             PlaceholderPhotoUrl = r.PlaceholderPhotoUrl,
             DistanceMiles = r.DistanceMiles,
             CanSendConnectionRequest = r.CanSendConnectionRequest,
+            CannotConnectReason = r.CannotConnectReason,
             ExistingConnectionId = r.ExistingConnectionId,
             ExistingConnectionStatus = r.ExistingConnectionStatus
         }).ToList();
