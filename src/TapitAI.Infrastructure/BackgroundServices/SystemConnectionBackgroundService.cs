@@ -92,13 +92,16 @@ public class SystemConnectionBackgroundService(
             .Where(pp => pp.IsActive)
             .ToListAsync(ct);
 
-        // Users in an active (non-dead) connection cannot be matched
+        // Users in an active (non-dead) connection cannot be matched.
+        // Dead = either participant passed, or both expired naturally.
         var usersWithActiveConn = await db.Set<Connection>()
             .Where(c => c.InvitationStatus == InvitationStatus.Pending
                      || (c.InvitationStatus == InvitationStatus.Accepted
                          && c.ConnectedAt == null
-                         && (c.SenderConnectionStatus == ParticipantConnectionStatus.Pending
-                             || c.ReceiverConnectionStatus == ParticipantConnectionStatus.Pending)))
+                         && c.SenderConnectionStatus != ParticipantConnectionStatus.Pass
+                         && c.ReceiverConnectionStatus != ParticipantConnectionStatus.Pass
+                         && c.SenderConnectionStatus != ParticipantConnectionStatus.Expired
+                         && c.ReceiverConnectionStatus != ParticipantConnectionStatus.Expired))
             .Select(c => new[] { c.SenderUserId, c.ReceiverUserId })
             .ToListAsync(ct);
         var activeConnectionUserIds = usersWithActiveConn.SelectMany(x => x).ToHashSet();

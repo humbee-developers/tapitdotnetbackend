@@ -18,16 +18,19 @@ public class GetPendingConnectionQueryHandler(IUnitOfWork uow, ICurrentUserServi
     {
         var userId = currentUser.UserId!;
 
-        // An accepted connection where:
-        // 1. Neither participant has passed (if anyone passes the match is over for both).
-        // 2. The current user specifically hasn't decided yet (still Pending).
+        // Return the active decision-phase connection for this user.
+        // Visible to both participants until either passes or either side's timer expires.
+        // MyConnectionStatus/PartnerConnectionStatus tells the mobile whether to show
+        // "decide now" (Pending) or "waiting for partner" (Connect) UI.
         var connection = await uow.Repository<Domain.Entities.Connection>().Query()
             .Where(c =>
                 c.InvitationStatus == InvitationStatus.Accepted
+                && c.ConnectedAt == null
                 && c.SenderConnectionStatus != ParticipantConnectionStatus.Pass
                 && c.ReceiverConnectionStatus != ParticipantConnectionStatus.Pass
-                && ((c.SenderUserId == userId && c.SenderConnectionStatus == ParticipantConnectionStatus.Pending)
-                 || (c.ReceiverUserId == userId && c.ReceiverConnectionStatus == ParticipantConnectionStatus.Pending)))
+                && c.SenderConnectionStatus != ParticipantConnectionStatus.Expired
+                && c.ReceiverConnectionStatus != ParticipantConnectionStatus.Expired
+                && (c.SenderUserId == userId || c.ReceiverUserId == userId))
             .OrderByDescending(c => c.AcceptedAt)
             .FirstOrDefaultAsync(ct);
 
@@ -44,12 +47,28 @@ public class GetPendingConnectionQueryHandler(IUnitOfWork uow, ICurrentUserServi
         var myStatus = isSender ? connection.SenderConnectionStatus : connection.ReceiverConnectionStatus;
         var partnerStatus = isSender ? connection.ReceiverConnectionStatus : connection.SenderConnectionStatus;
 
+        // System connections keep identity hidden until both participants connect (ConnectedAt is set).
+        var hideIdentity = connection.InitiatedVia == ConnectionInitiatedVia.System
+                           && connection.ConnectedAt == null;
+
+        string? photoUrl = null;
+        if (hideIdentity)
+        {
+            var placeholders = await uow.Repository<PlaceholderPhoto>().Query()
+                .Where(pp => pp.IsActive).ToListAsync(ct);
+            photoUrl = GetPlaceholder(placeholders, profile?.Gender ?? "MALE", connection.Id);
+        }
+        else
+        {
+            photoUrl = profile?.Photos.FirstOrDefault(ph => ph.IsPrimary)?.PublicUrl;
+        }
+
         return Result<ConnectionDetailDto?>.Success(new ConnectionDetailDto
         {
             ConnectionId = connection.Id,
             OtherUserId = otherUserId,
-            OtherUserDisplayName = profile?.DisplayName ?? "Unknown",
-            OtherUserPrimaryPhotoUrl = profile?.Photos.FirstOrDefault(ph => ph.IsPrimary)?.PublicUrl,
+            OtherUserDisplayName = hideIdentity ? MaskName(profile?.DisplayName ?? "Someone") : (profile?.DisplayName ?? "Unknown"),
+            OtherUserPrimaryPhotoUrl = photoUrl,
             OtherUserAgeRange = profile?.AgeRange ?? string.Empty,
             InvitationStatus = connection.InvitationStatus.ToString(),
             MyConnectionStatus = myStatus?.ToString(),
@@ -57,7 +76,28 @@ public class GetPendingConnectionQueryHandler(IUnitOfWork uow, ICurrentUserServi
             ChatChannelId = connection.ChatChannelId,
             InvitedAt = connection.InvitedAt,
             ConnectedAt = connection.ConnectedAt,
+            ExpiresAt = connection.ExpiresAt,
+            InitiatedVia = connection.InitiatedVia.ToString(),
+            IsIdentityHidden = hideIdentity,
             IsSender = isSender
         });
+    }
+
+    private static string GetPlaceholder(List<PlaceholderPhoto> placeholders, string gender, Guid connectionId)
+    {
+        var matches = placeholders.Where(p => p.Gender.Equals(gender, StringComparison.OrdinalIgnoreCase)).ToList();
+        if (matches.Count == 0) matches = placeholders;
+        if (matches.Count == 0) return string.Empty;
+        var index = (int)(BitConverter.ToUInt32(connectionId.ToByteArray(), 0) % (uint)matches.Count);
+        return matches[index].PhotoUrl;
+    }
+
+    private static string MaskName(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name)) return name;
+        var chars = name.ToCharArray();
+        for (var i = 1; i < chars.Length; i += 2)
+            if (chars[i] != ' ') chars[i] = '*';
+        return new string(chars);
     }
 }

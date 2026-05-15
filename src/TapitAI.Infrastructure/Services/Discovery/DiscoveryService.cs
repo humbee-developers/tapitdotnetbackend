@@ -132,10 +132,10 @@ public class DiscoveryService(AppDbContext db, IAdminSettingService settings, IL
                 (c.SenderUserId == requestingUserId || c.ReceiverUserId == requestingUserId)
                 && c.ConnectedAt.HasValue && c.ConnectedAt.Value.Date == today, ct);
 
-        // Active = waiting for acceptance (Pending), OR in the decision phase where at least one
-        // participant hasn't decided yet (Accepted + ConnectedAt null + someone still Pending).
-        // Expired InvitationStatus, expired/passed participant statuses, and ConnectedAt-set
-        // connections are all non-blocking — the user is free to connect with others.
+        // A connection is "active" (blocking) while:
+        //   - invitation is still pending, OR
+        //   - in the decision phase and neither participant has passed or expired.
+        // If anyone passed or the timer expired, the connection is dead and both users are free.
         var iHaveActiveConnection = await db.Set<Connection>()
             .AsNoTracking()
             .AnyAsync(c =>
@@ -143,8 +143,10 @@ public class DiscoveryService(AppDbContext db, IAdminSettingService settings, IL
                 && (c.InvitationStatus == InvitationStatus.Pending
                     || (c.InvitationStatus == InvitationStatus.Accepted
                         && c.ConnectedAt == null
-                        && (c.SenderConnectionStatus == ParticipantConnectionStatus.Pending
-                            || c.ReceiverConnectionStatus == ParticipantConnectionStatus.Pending))), ct);
+                        && c.SenderConnectionStatus != ParticipantConnectionStatus.Pass
+                        && c.ReceiverConnectionStatus != ParticipantConnectionStatus.Pass
+                        && c.SenderConnectionStatus != ParticipantConnectionStatus.Expired
+                        && c.ReceiverConnectionStatus != ParticipantConnectionStatus.Expired)), ct);
 
         // Nearby users who are already a party to any active connection — they cannot be connected to.
         var nearbyUsersWithActive = await db.Set<Connection>()
@@ -153,8 +155,10 @@ public class DiscoveryService(AppDbContext db, IAdminSettingService settings, IL
                 (c.InvitationStatus == InvitationStatus.Pending
                     || (c.InvitationStatus == InvitationStatus.Accepted
                         && c.ConnectedAt == null
-                        && (c.SenderConnectionStatus == ParticipantConnectionStatus.Pending
-                            || c.ReceiverConnectionStatus == ParticipantConnectionStatus.Pending)))
+                        && c.SenderConnectionStatus != ParticipantConnectionStatus.Pass
+                        && c.ReceiverConnectionStatus != ParticipantConnectionStatus.Pass
+                        && c.SenderConnectionStatus != ParticipantConnectionStatus.Expired
+                        && c.ReceiverConnectionStatus != ParticipantConnectionStatus.Expired))
                 && (nearbyUserIds.Contains(c.SenderUserId) || nearbyUserIds.Contains(c.ReceiverUserId)))
             .Select(c => new { c.SenderUserId, c.ReceiverUserId })
             .ToListAsync(ct);
@@ -242,7 +246,7 @@ public class DiscoveryService(AppDbContext db, IAdminSettingService settings, IL
                 : existingConnBlocks                        ? "ALREADY_CONNECTED"
                 : null;
 
-            var placeholder = GetPlaceholder(placeholders, theirGender);
+            var placeholder = GetPlaceholder(placeholders, theirGender, location.UserId);
 
             results.Add(new NearbyUserResult(
                 location.UserId,
@@ -273,12 +277,13 @@ public class DiscoveryService(AppDbContext db, IAdminSettingService settings, IL
         return R * 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
     }
 
-    private static string GetPlaceholder(List<PlaceholderPhoto> photos, string gender)
+    private static string GetPlaceholder(List<PlaceholderPhoto> photos, string gender, string userId)
     {
         var matches = photos.Where(p => p.Gender.Equals(gender, StringComparison.OrdinalIgnoreCase)).ToList();
-        if (!matches.Any()) matches = photos;
-        if (!matches.Any()) return string.Empty;
-        return matches[Random.Shared.Next(matches.Count)].PhotoUrl;
+        if (matches.Count == 0) matches = photos;
+        if (matches.Count == 0) return string.Empty;
+        var hash = userId.Aggregate(0u, (acc, c) => acc * 31 + c);
+        return matches[(int)(hash % (uint)matches.Count)].PhotoUrl;
     }
 
     private static string MaskName(string name)

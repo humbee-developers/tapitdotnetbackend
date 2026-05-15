@@ -27,7 +27,14 @@ public class ConnectionDetailDto
     public string? ChatChannelId { get; set; }
     public DateTime InvitedAt { get; set; }
     public DateTime? ConnectedAt { get; set; }
+    public DateTime? ExpiresAt { get; set; }
+    public string? InitiatedVia { get; set; }
     public bool IsSender { get; set; }
+    /// <summary>
+    /// True while a system connection is in the decision phase and identity is still hidden.
+    /// Mobile should show placeholder photo and masked name; do not navigate to profile.
+    /// </summary>
+    public bool IsIdentityHidden { get; set; }
 }
 
 public class ConnectionActionResultDto

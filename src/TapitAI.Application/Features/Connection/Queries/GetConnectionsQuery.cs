@@ -56,6 +56,9 @@ public class GetConnectionsQueryHandler(IUnitOfWork uow, ICurrentUserService cur
                 ChatChannelId = c.ChatChannelId,
                 InvitedAt = c.InvitedAt,
                 ConnectedAt = c.ConnectedAt,
+                ExpiresAt = c.ExpiresAt,
+                InitiatedVia = c.InitiatedVia.ToString(),
+                IsIdentityHidden = false,
                 IsSender = isSender
             };
         }).ToList();
