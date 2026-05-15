@@ -18,10 +18,14 @@ public class GetPendingConnectionQueryHandler(IUnitOfWork uow, ICurrentUserServi
     {
         var userId = currentUser.UserId!;
 
-        // An accepted connection where THIS user specifically hasn't decided chat/pass yet.
+        // An accepted connection where:
+        // 1. Neither participant has passed (if anyone passes the match is over for both).
+        // 2. The current user specifically hasn't decided yet (still Pending).
         var connection = await uow.Repository<Domain.Entities.Connection>().Query()
             .Where(c =>
                 c.InvitationStatus == InvitationStatus.Accepted
+                && c.SenderConnectionStatus != ParticipantConnectionStatus.Pass
+                && c.ReceiverConnectionStatus != ParticipantConnectionStatus.Pass
                 && ((c.SenderUserId == userId && c.SenderConnectionStatus == ParticipantConnectionStatus.Pending)
                  || (c.ReceiverUserId == userId && c.ReceiverConnectionStatus == ParticipantConnectionStatus.Pending)))
             .OrderByDescending(c => c.AcceptedAt)
