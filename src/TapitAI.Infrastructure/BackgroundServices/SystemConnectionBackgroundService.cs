@@ -88,7 +88,10 @@ public class SystemConnectionBackgroundService(
 
         var usersWithActive = await db.Set<Connection>()
             .Where(c => c.InvitationStatus == InvitationStatus.Pending
-                     || (c.InvitationStatus == InvitationStatus.Accepted && c.ConnectedAt == null))
+                     || (c.InvitationStatus == InvitationStatus.Accepted
+                         && c.ConnectedAt == null
+                         && (c.SenderConnectionStatus == ParticipantConnectionStatus.Pending
+                             || c.ReceiverConnectionStatus == ParticipantConnectionStatus.Pending)))
             .Select(c => new[] { c.SenderUserId, c.ReceiverUserId })
             .ToListAsync(ct);
         var blockedUserIds = usersWithActive.SelectMany(x => x).ToHashSet();
@@ -154,15 +157,20 @@ public class SystemConnectionBackgroundService(
                     .CountAsync(c => c.ReceiverUserId == receiverLocation.UserId && c.InvitedAt.Date == today, ct);
                 if (receiverReceiveToday >= receiveLimit) continue;
 
-                // Skip if any non-terminal connection exists between this pair (mirrors DiscoveryService rule).
-                // Terminal statuses (Rejected, Withdrawn, Expired) allow re-pairing; everything else does not.
+                // Skip if a live connection exists between this pair.
+                // Terminal (Rejected, Withdrawn, Expired) and dead Accepted (decision phase over,
+                // no chat started) allow re-pairing; everything else does not.
                 var existingConn = await db.Set<Connection>()
                     .AnyAsync(c =>
                         ((c.SenderUserId == senderLocation.UserId && c.ReceiverUserId == receiverLocation.UserId)
                         || (c.SenderUserId == receiverLocation.UserId && c.ReceiverUserId == senderLocation.UserId))
                         && c.InvitationStatus != InvitationStatus.Rejected
                         && c.InvitationStatus != InvitationStatus.Withdrawn
-                        && c.InvitationStatus != InvitationStatus.Expired, ct);
+                        && c.InvitationStatus != InvitationStatus.Expired
+                        && !(c.InvitationStatus == InvitationStatus.Accepted
+                             && c.ConnectedAt == null
+                             && c.SenderConnectionStatus != ParticipantConnectionStatus.Pending
+                             && c.ReceiverConnectionStatus != ParticipantConnectionStatus.Pending), ct);
 
                 if (existingConn) continue;
 

@@ -21,7 +21,7 @@ public class GetInvitationsQueryHandler(IUnitOfWork uow, ICurrentUserService cur
         var connections = await uow.Repository<Domain.Entities.Connection>().Query()
             .Where(c =>
                 (c.SenderUserId == userId || c.ReceiverUserId == userId)
-                && (c.InvitationStatus == InvitationStatus.Pending || c.InvitationStatus == InvitationStatus.Rejected))
+                && c.InvitationStatus == InvitationStatus.Pending)
             .OrderByDescending(c => c.InvitedAt)
             .ToListAsync(ct);
 

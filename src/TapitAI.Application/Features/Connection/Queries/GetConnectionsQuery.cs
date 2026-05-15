@@ -21,8 +21,9 @@ public class GetConnectionsQueryHandler(IUnitOfWork uow, ICurrentUserService cur
         var connections = await uow.Repository<Domain.Entities.Connection>().Query()
             .Where(c =>
                 (c.SenderUserId == userId || c.ReceiverUserId == userId)
-                && c.InvitationStatus == InvitationStatus.Accepted)
-            .OrderByDescending(c => c.AcceptedAt)
+                && c.InvitationStatus == InvitationStatus.Accepted
+                && c.ConnectedAt != null)
+            .OrderByDescending(c => c.ConnectedAt)
             .ToListAsync(ct);
 
         var otherUserIds = connections
