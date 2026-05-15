@@ -215,10 +215,6 @@ public class SystemConnectionBackgroundService(
                     receiverLocation.Location.Y, receiverLocation.Location.X,
                     ConnectionInitiatedVia.System, message, expiryMinutes);
 
-                // System connections skip the invitation phase — neither user "sent" this,
-                // so both go straight to the decision phase (Connect or Pass).
-                connection.Accept();
-
                 db.Set<Connection>().Add(connection);
                 await db.SaveChangesAsync(ct);
 
@@ -232,47 +228,45 @@ public class SystemConnectionBackgroundService(
                 var receiverGenderStr = receiverProfile.Gender ?? "MALE";
                 var receiverPlaceholderPhotoUrl = GetPlaceholder(placeholders, receiverGenderStr);
 
-                // Both users are immediately in the decision phase — notify with masked info.
-                await realTime.SendToUserAsync(receiverLocation.UserId, HubEvents.ConnectionAccepted, new
+                // Step 1 of 2: show invitation popup to both users.
+                // Receiver must Accept/Reject. Sender sees "invitation sent" state.
+                // Step 2 (decision phase) begins only after receiver accepts.
+                await realTime.SendToUserAsync(receiverLocation.UserId, HubEvents.ConnectionRequestReceived, new
                 {
                     ConnectionId = connection.Id,
-                    OtherUserMaskedName = senderMaskedName,
-                    OtherUserAgeRange = senderProfile.AgeRange,
-                    OtherUserGender = senderGenderStr,
-                    OtherUserPlaceholderPhotoUrl = senderPlaceholderPhotoUrl,
+                    SenderMaskedName = senderMaskedName,
+                    SenderAgeRange = senderProfile.AgeRange,
+                    SenderGender = senderGenderStr,
+                    SenderPlaceholderPhotoUrl = senderPlaceholderPhotoUrl,
                     Message = message,
                     InitiatedVia = "System",
                     ExpiresAt = connection.ExpiresAt
                 }, ct);
 
-                await realTime.SendToUserAsync(senderLocation.UserId, HubEvents.ConnectionAccepted, new
+                await realTime.SendToUserAsync(senderLocation.UserId, HubEvents.ConnectionRequestSent, new
                 {
                     ConnectionId = connection.Id,
-                    OtherUserMaskedName = MaskName(receiverProfile.DisplayName),
-                    OtherUserAgeRange = receiverProfile.AgeRange,
-                    OtherUserGender = receiverGenderStr,
-                    OtherUserPlaceholderPhotoUrl = receiverPlaceholderPhotoUrl,
-                    Message = message,
-                    InitiatedVia = "System",
+                    ReceiverMaskedName = MaskName(receiverProfile.DisplayName),
+                    ReceiverPlaceholderPhotoUrl = receiverPlaceholderPhotoUrl,
                     ExpiresAt = connection.ExpiresAt
                 }, ct);
 
                 await firebase.SendToUserAsync(receiverLocation.UserId,
-                    title: "We Found a Match!",
-                    body: $"{senderMaskedName} is nearby — connect or pass?",
+                    title: "New Connection Request",
+                    body: $"{senderMaskedName} wants to connect with you!",
                     data: new Dictionary<string, string>
                     {
-                        ["type"]         = "SystemConnectionMatched",
+                        ["type"]         = "ConnectionRequestReceived",
                         ["connectionId"] = connection.Id.ToString(),
                         ["message"]      = message
                     },
                     ct: ct);
                 await firebase.SendToUserAsync(senderLocation.UserId,
                     title: "We Found a Match!",
-                    body: "Someone nearby is ready — connect or pass?",
+                    body: "We found someone nearby for you!",
                     data: new Dictionary<string, string>
                     {
-                        ["type"]         = "SystemConnectionMatched",
+                        ["type"]         = "ConnectionRequestSent",
                         ["connectionId"] = connection.Id.ToString()
                     },
                     ct: ct);

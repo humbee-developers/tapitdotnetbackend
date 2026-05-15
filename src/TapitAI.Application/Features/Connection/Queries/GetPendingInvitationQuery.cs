@@ -38,7 +38,7 @@ public class GetPendingInvitationQueryHandler(IUnitOfWork uow, ICurrentUserServi
             .Where(pp => pp.IsActive).ToListAsync(ct);
 
         var gender = profile?.Gender ?? "MALE";
-        var placeholder = GetPlaceholder(placeholders, gender);
+        var placeholder = GetPlaceholder(placeholders, gender, connection.Id);
 
         return Result<ConnectionInvitationDto?>.Success(new ConnectionInvitationDto
         {
@@ -55,12 +55,13 @@ public class GetPendingInvitationQueryHandler(IUnitOfWork uow, ICurrentUserServi
         });
     }
 
-    private static string GetPlaceholder(List<PlaceholderPhoto> photos, string gender)
+    private static string GetPlaceholder(List<PlaceholderPhoto> photos, string gender, Guid connectionId)
     {
         var matches = photos.Where(p => p.Gender.Equals(gender, StringComparison.OrdinalIgnoreCase)).ToList();
-        if (!matches.Any()) matches = photos;
-        if (!matches.Any()) return string.Empty;
-        return matches[Random.Shared.Next(matches.Count)].PhotoUrl;
+        if (matches.Count == 0) matches = photos;
+        if (matches.Count == 0) return string.Empty;
+        var index = (int)(BitConverter.ToUInt32(connectionId.ToByteArray(), 0) % (uint)matches.Count);
+        return matches[index].PhotoUrl;
     }
 
     private static string MaskName(string name)

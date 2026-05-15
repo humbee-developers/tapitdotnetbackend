@@ -219,20 +219,26 @@ public class DiscoveryService(AppDbContext db, IAdminSettingService settings, IL
                 location.Location.Y, location.Location.X);
             var distanceMiles = distanceMeters / 1609.34;
 
-            var existingConn = existingConnections.FirstOrDefault(c =>
-                c.SenderUserId == location.UserId || c.ReceiverUserId == location.UserId);
+            // All historical connections between this pair — there may be more than one.
+            var pairConns = existingConnections
+                .Where(c => c.SenderUserId == location.UserId || c.ReceiverUserId == location.UserId)
+                .ToList();
 
-            // A dead Accepted connection (decision phase expired/passed with no chat) does not block.
-            var deadAccepted = existingConn is { InvitationStatus: InvitationStatus.Accepted }
-                && existingConn.ConnectedAt == null
-                && existingConn.SenderConnectionStatus != ParticipantConnectionStatus.Pending
-                && existingConn.ReceiverConnectionStatus != ParticipantConnectionStatus.Pending;
+            // Most recent connection for DTO metadata (ExistingConnectionId / ExistingConnectionStatus).
+            var existingConn = pairConns.OrderByDescending(c => c.InvitedAt).FirstOrDefault();
 
-            var existingConnBlocks = existingConn is not null
-                && existingConn.InvitationStatus != InvitationStatus.Rejected
-                && existingConn.InvitationStatus != InvitationStatus.Withdrawn
-                && existingConn.InvitationStatus != InvitationStatus.Expired
-                && !deadAccepted;
+            // Re-connecting is only allowed when EVERY prior interaction ended with no active rejection:
+            //   - invitation withdrawn (sender changed mind)
+            //   - invitation expired naturally (nobody responded)
+            //   - decision phase timed out for BOTH sides (neither actively passed)
+            // If ANY row shows Rejected invitation or a Pass in the decision phase, block the pair.
+            var existingConnBlocks = pairConns.Any(c =>
+                c.InvitationStatus != InvitationStatus.Withdrawn
+                && c.InvitationStatus != InvitationStatus.Expired
+                && !(c.InvitationStatus == InvitationStatus.Accepted
+                     && c.ConnectedAt == null
+                     && c.SenderConnectionStatus == ParticipantConnectionStatus.Expired
+                     && c.ReceiverConnectionStatus == ParticipantConnectionStatus.Expired));
 
             var canSend = !iHaveActiveConnection
                 && !nearbyActiveUserIds.Contains(location.UserId)
