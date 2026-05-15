@@ -212,6 +212,10 @@ public class SystemConnectionBackgroundService(
                     receiverLocation.Location.Y, receiverLocation.Location.X,
                     ConnectionInitiatedVia.System, message, expiryMinutes);
 
+                // System connections skip the invitation phase — neither user "sent" this,
+                // so both go straight to the decision phase (Connect or Pass).
+                connection.Accept();
+
                 db.Set<Connection>().Add(connection);
                 await db.SaveChangesAsync(ct);
 
@@ -225,42 +229,47 @@ public class SystemConnectionBackgroundService(
                 var receiverGenderStr = receiverProfile.Gender ?? "MALE";
                 var receiverPlaceholderPhotoUrl = GetPlaceholder(placeholders, receiverGenderStr);
 
-                await realTime.SendToUserAsync(receiverLocation.UserId, HubEvents.ConnectionRequestReceived, new
+                // Both users are immediately in the decision phase — notify with masked info.
+                await realTime.SendToUserAsync(receiverLocation.UserId, HubEvents.ConnectionAccepted, new
                 {
                     ConnectionId = connection.Id,
-                    SenderMaskedName = senderMaskedName,
-                    SenderAgeRange = senderProfile.AgeRange,
-                    SenderGender = senderGenderStr,
-                    SenderPlaceholderPhotoUrl = senderPlaceholderPhotoUrl,
+                    OtherUserMaskedName = senderMaskedName,
+                    OtherUserAgeRange = senderProfile.AgeRange,
+                    OtherUserGender = senderGenderStr,
+                    OtherUserPlaceholderPhotoUrl = senderPlaceholderPhotoUrl,
                     Message = message,
                     InitiatedVia = "System",
                     ExpiresAt = connection.ExpiresAt
                 }, ct);
 
-                await realTime.SendToUserAsync(senderLocation.UserId, HubEvents.ConnectionRequestSent, new
+                await realTime.SendToUserAsync(senderLocation.UserId, HubEvents.ConnectionAccepted, new
                 {
                     ConnectionId = connection.Id,
-                    ReceiverMaskedName = MaskName(receiverProfile.DisplayName),
-                    ReceiverPlaceholderPhotoUrl = receiverPlaceholderPhotoUrl,
+                    OtherUserMaskedName = MaskName(receiverProfile.DisplayName),
+                    OtherUserAgeRange = receiverProfile.AgeRange,
+                    OtherUserGender = receiverGenderStr,
+                    OtherUserPlaceholderPhotoUrl = receiverPlaceholderPhotoUrl,
+                    Message = message,
+                    InitiatedVia = "System",
                     ExpiresAt = connection.ExpiresAt
                 }, ct);
 
                 await firebase.SendToUserAsync(receiverLocation.UserId,
-                    title: "New Connection Request",
-                    body: $"{senderMaskedName} wants to connect with you!",
+                    title: "We Found a Match!",
+                    body: $"{senderMaskedName} is nearby — connect or pass?",
                     data: new Dictionary<string, string>
                     {
-                        ["type"]         = "ConnectionRequestReceived",
+                        ["type"]         = "SystemConnectionMatched",
                         ["connectionId"] = connection.Id.ToString(),
                         ["message"]      = message
                     },
                     ct: ct);
                 await firebase.SendToUserAsync(senderLocation.UserId,
                     title: "We Found a Match!",
-                    body: "We found someone nearby for you!",
+                    body: "Someone nearby is ready — connect or pass?",
                     data: new Dictionary<string, string>
                     {
-                        ["type"]         = "ConnectionRequestSent",
+                        ["type"]         = "SystemConnectionMatched",
                         ["connectionId"] = connection.Id.ToString()
                     },
                     ct: ct);
