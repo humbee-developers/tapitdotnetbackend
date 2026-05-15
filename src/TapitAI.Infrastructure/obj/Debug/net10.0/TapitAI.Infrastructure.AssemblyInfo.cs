@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("TapitAI.Infrastructure")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+fa49a8d3eec83e9cb9ce01ffeae5888f6ad05319")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+75a7d7755184d78803c24542c74ea54cb910adf6")]
 [assembly: System.Reflection.AssemblyProductAttribute("TapitAI.Infrastructure")]
 [assembly: System.Reflection.AssemblyTitleAttribute("TapitAI.Infrastructure")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -191,6 +191,9 @@ public class SystemConnectionBackgroundService(
                 var senderPlaceholderPhotoUrl = GetPlaceholder(placeholders, senderGenderStr);
                 var senderMaskedName = MaskName(senderProfile.DisplayName);
 
+                var receiverGenderStr = receiverProfile.Gender ?? "MALE";
+                var receiverPlaceholderPhotoUrl = GetPlaceholder(placeholders, receiverGenderStr);
+
                 await realTime.SendToUserAsync(receiverLocation.UserId, HubEvents.ConnectionRequestReceived, new
                 {
                     ConnectionId = connection.Id,
@@ -207,6 +210,7 @@ public class SystemConnectionBackgroundService(
                 {
                     ConnectionId = connection.Id,
                     ReceiverMaskedName = MaskName(receiverProfile.DisplayName),
+                    ReceiverPlaceholderPhotoUrl = receiverPlaceholderPhotoUrl,
                     ExpiresAt = connection.ExpiresAt
                 }, ct);
 
