@@ -1,5 +1,6 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using TapitAI.Application.Common.Helpers;
 using TapitAI.Application.Common.Interfaces;
 using TapitAI.Application.Common.Models;
 using TapitAI.Application.DTOs.Dating;
@@ -21,6 +22,7 @@ public record SendConnectionRequestCommand(
 public class SendConnectionRequestCommandHandler(
     IUnitOfWork uow,
     ICurrentUserService currentUser,
+    IIdentityService identity,
     IAdminSettingService settings,
     IRealTimeService realTime,
     IFirebaseService firebase)
@@ -58,7 +60,6 @@ public class SendConnectionRequestCommandHandler(
         if (establishedToday >= connectionLimit)
             return Result<ConnectionActionResultDto>.Failure($"Daily connection limit of {connectionLimit} reached.");
 
-        // Reject if either party has blocked the other
         var isBlocked = await uow.Repository<UserBlock>().Query()
             .AnyAsync(b =>
                 (b.BlockerUserId == senderId && b.BlockedUserId == receiverId) ||
@@ -106,37 +107,17 @@ public class SendConnectionRequestCommandHandler(
         await uow.Repository<Domain.Entities.Connection>().AddAsync(connection, ct);
         await uow.SaveChangesAsync(ct);
 
-        var senderProfile = await uow.Repository<UserDatingProfile>().Query()
-            .FirstOrDefaultAsync(p => p.UserId == senderId, ct);
+        var idMap = await identity.ResolveInternalUserIdsAsync([senderId, receiverId], ct);
+        var senderInternalId   = idMap.GetValueOrDefault(senderId,   senderId);
+        var receiverInternalId = idMap.GetValueOrDefault(receiverId, receiverId);
 
-        var receiverProfile = await uow.Repository<UserDatingProfile>().Query()
-            .FirstOrDefaultAsync(p => p.UserId == receiverId, ct);
+        var profiles = await ConnectionEventPayload.LoadProfilesAsync(connection, uow, ct);
+        var payload  = ConnectionEventPayload.Build(connection, senderInternalId, receiverInternalId, profiles);
 
-        var placeholders = await uow.Repository<PlaceholderPhoto>().Query()
-            .Where(pp => pp.IsActive).ToListAsync(ct);
+        await realTime.SendToUserAsync(receiverId, HubEvents.ConnectionRequestReceived, payload, ct);
+        await realTime.SendToUserAsync(senderId,   HubEvents.ConnectionRequestSent,     payload, ct);
 
-        var senderMaskedName = MaskName(senderProfile?.DisplayName ?? "Someone");
-        var senderGender = senderProfile?.Gender ?? "MALE";
-        var senderPlaceholderPhotoUrl = GetPlaceholder(placeholders, senderGender);
-
-        await realTime.SendToUserAsync(receiverId, HubEvents.ConnectionRequestReceived, new
-        {
-            ConnectionId = connection.Id,
-            SenderMaskedName = senderMaskedName,
-            SenderAgeRange = senderProfile?.AgeRange,
-            SenderGender = senderGender,
-            SenderPlaceholderPhotoUrl = senderPlaceholderPhotoUrl,
-            Message = invitationMessage,
-            InitiatedVia = cmd.InitiatedVia.ToString(),
-            ExpiresAt = connection.ExpiresAt
-        }, ct);
-
-        await realTime.SendToUserAsync(senderId, HubEvents.ConnectionRequestSent, new
-        {
-            ConnectionId = connection.Id,
-            ReceiverMaskedName = MaskName(receiverProfile?.DisplayName ?? "Someone"),
-            ExpiresAt = connection.ExpiresAt
-        }, ct);
+        var senderMaskedName = ConnectionEventPayload.MaskName(profiles.SenderDisplayName) ?? "Someone";
 
         await firebase.SendToUserAsync(receiverId,
             title: "New Connection Request",
@@ -154,21 +135,5 @@ public class SendConnectionRequestCommandHandler(
             ConnectionId = connection.Id,
             Status = connection.InvitationStatus.ToString()
         });
-    }
-
-    private static string? GetPlaceholder(List<PlaceholderPhoto> placeholders, string gender)
-    {
-        var match = placeholders.FirstOrDefault(p =>
-            string.Equals(p.Gender, gender, StringComparison.OrdinalIgnoreCase));
-        return (match ?? placeholders.FirstOrDefault())?.PhotoUrl;
-    }
-
-    private static string MaskName(string name)
-    {
-        if (string.IsNullOrWhiteSpace(name)) return name;
-        var chars = name.ToCharArray();
-        for (var i = 1; i < chars.Length; i += 2)
-            if (chars[i] != ' ') chars[i] = '*';
-        return new string(chars);
     }
 }

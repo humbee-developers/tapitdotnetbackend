@@ -1,4 +1,5 @@
 using MediatR;
+using TapitAI.Application.Common.Helpers;
 using TapitAI.Application.Common.Interfaces;
 using TapitAI.Application.Common.Models;
 using TapitAI.Application.DTOs.Dating;
@@ -12,7 +13,8 @@ namespace TapitAI.Application.Features.Connection.Commands;
 public record RejectConnectionCommand(Guid ConnectionId, string? RejectionMessage) : IRequest<Result<ConnectionActionResultDto>>;
 
 public class RejectConnectionCommandHandler(
-    IUnitOfWork uow, ICurrentUserService currentUser, IRealTimeService realTime, IFirebaseService firebase)
+    IUnitOfWork uow, ICurrentUserService currentUser, IIdentityService identity,
+    IRealTimeService realTime, IFirebaseService firebase)
     : IRequestHandler<RejectConnectionCommand, Result<ConnectionActionResultDto>>
 {
     public async Task<Result<ConnectionActionResultDto>> Handle(RejectConnectionCommand cmd, CancellationToken ct)
@@ -30,11 +32,15 @@ public class RejectConnectionCommandHandler(
         connection.Reject(message);
         await uow.SaveChangesAsync(ct);
 
-        await realTime.SendToUserAsync(connection.SenderUserId, HubEvents.ConnectionRejected, new
-        {
-            ConnectionId = connection.Id,
-            Message = message
-        }, ct);
+        var idMap = await identity.ResolveInternalUserIdsAsync(
+            [connection.SenderUserId, connection.ReceiverUserId], ct);
+        var senderInternalId   = idMap.GetValueOrDefault(connection.SenderUserId,   connection.SenderUserId);
+        var receiverInternalId = idMap.GetValueOrDefault(connection.ReceiverUserId, connection.ReceiverUserId);
+
+        var profiles = await ConnectionEventPayload.LoadProfilesAsync(connection, uow, ct);
+        var payload  = ConnectionEventPayload.Build(connection, senderInternalId, receiverInternalId, profiles);
+
+        await realTime.SendToUserAsync(connection.SenderUserId, HubEvents.ConnectionRejected, payload, ct);
 
         await firebase.SendToUserAsync(connection.SenderUserId,
             title: "Request Not Accepted",

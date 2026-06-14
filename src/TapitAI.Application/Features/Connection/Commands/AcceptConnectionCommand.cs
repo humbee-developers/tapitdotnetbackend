@@ -1,10 +1,9 @@
 using MediatR;
-using Microsoft.EntityFrameworkCore;
+using TapitAI.Application.Common.Helpers;
 using TapitAI.Application.Common.Interfaces;
 using TapitAI.Application.Common.Models;
 using TapitAI.Application.DTOs.Dating;
 using TapitAI.Domain.Constants;
-using TapitAI.Domain.Entities;
 using TapitAI.Domain.Exceptions;
 using TapitAI.Domain.Interfaces.Repositories;
 using TapitAI.Domain.Interfaces.Services;
@@ -14,7 +13,8 @@ namespace TapitAI.Application.Features.Connection.Commands;
 public record AcceptConnectionCommand(Guid ConnectionId) : IRequest<Result<ConnectionActionResultDto>>;
 
 public class AcceptConnectionCommandHandler(
-    IUnitOfWork uow, ICurrentUserService currentUser, IRealTimeService realTime, IFirebaseService firebase)
+    IUnitOfWork uow, ICurrentUserService currentUser, IIdentityService identity,
+    IRealTimeService realTime, IFirebaseService firebase)
     : IRequestHandler<AcceptConnectionCommand, Result<ConnectionActionResultDto>>
 {
     public async Task<Result<ConnectionActionResultDto>> Handle(AcceptConnectionCommand cmd, CancellationToken ct)
@@ -28,63 +28,34 @@ public class AcceptConnectionCommandHandler(
         connection.Accept();
         await uow.SaveChangesAsync(ct);
 
-        var senderProfile = await uow.Repository<UserDatingProfile>().Query()
-            .Include(p => p.Photos)
-            .FirstOrDefaultAsync(p => p.UserId == connection.SenderUserId, ct);
+        var idMap = await identity.ResolveInternalUserIdsAsync(
+            [connection.SenderUserId, connection.ReceiverUserId], ct);
+        var senderInternalId   = idMap.GetValueOrDefault(connection.SenderUserId,   connection.SenderUserId);
+        var receiverInternalId = idMap.GetValueOrDefault(connection.ReceiverUserId, connection.ReceiverUserId);
 
-        var receiverProfile = await uow.Repository<UserDatingProfile>().Query()
-            .Include(p => p.Photos)
-            .FirstOrDefaultAsync(p => p.UserId == connection.ReceiverUserId, ct);
+        var profiles = await ConnectionEventPayload.LoadProfilesAsync(connection, uow, ct);
+        var payload  = ConnectionEventPayload.Build(connection, senderInternalId, receiverInternalId, profiles);
 
-        var senderPhotoUrl = senderProfile?.Photos.FirstOrDefault(ph => ph.IsPrimary)?.PublicUrl;
-        var receiverPhotoUrl = receiverProfile?.Photos.FirstOrDefault(ph => ph.IsPrimary)?.PublicUrl;
-
-        // Invitation accepted — reveal real identity to both parties for the decision popup.
-        await realTime.SendToUserAsync(connection.SenderUserId, HubEvents.ConnectionAccepted, new
-        {
-            ConnectionId = connection.Id,
-            IsIdentityHidden = false,
-            OtherUserDisplayName = receiverProfile?.DisplayName,
-            OtherUserPhotoUrl = receiverPhotoUrl,
-            OtherUserAgeRange = receiverProfile?.AgeRange,
-            Message = "Your connection request was accepted!"
-        }, ct);
-
-        await realTime.SendToUserAsync(connection.ReceiverUserId, HubEvents.ConnectionAccepted, new
-        {
-            ConnectionId = connection.Id,
-            IsIdentityHidden = false,
-            OtherUserDisplayName = senderProfile?.DisplayName,
-            OtherUserPhotoUrl = senderPhotoUrl,
-            OtherUserAgeRange = senderProfile?.AgeRange,
-            Message = "You accepted the connection request!"
-        }, ct);
+        await realTime.SendToUserAsync(connection.SenderUserId,   HubEvents.ConnectionAccepted, payload, ct);
+        await realTime.SendToUserAsync(connection.ReceiverUserId, HubEvents.ConnectionAccepted, payload, ct);
 
         await firebase.SendToUserAsync(connection.SenderUserId,
             title: "Connection Accepted!",
-            body: $"{receiverProfile?.DisplayName ?? "Someone"} accepted your request!",
+            body: $"{profiles.ReceiverDisplayName ?? "Someone"} accepted your request!",
             data: new Dictionary<string, string>
             {
-                ["type"]              = "ConnectionAccepted",
-                ["connectionId"]      = connection.Id.ToString(),
-                ["otherUserName"]     = receiverProfile?.DisplayName ?? "",
-                ["otherUserPhotoUrl"] = receiverPhotoUrl ?? "",
-                ["otherUserAgeRange"] = receiverProfile?.AgeRange ?? "",
-                ["message"]           = "Your connection request was accepted!"
+                ["type"]         = "ConnectionAccepted",
+                ["connectionId"] = connection.Id.ToString()
             },
             ct: ct);
 
         await firebase.SendToUserAsync(connection.ReceiverUserId,
             title: "Connection Accepted!",
-            body: $"You're now connected with {senderProfile?.DisplayName ?? "someone nearby"}!",
+            body: $"You're now connected with {profiles.SenderDisplayName ?? "someone nearby"}!",
             data: new Dictionary<string, string>
             {
-                ["type"]              = "ConnectionAccepted",
-                ["connectionId"]      = connection.Id.ToString(),
-                ["otherUserName"]     = senderProfile?.DisplayName ?? "",
-                ["otherUserPhotoUrl"] = senderPhotoUrl ?? "",
-                ["otherUserAgeRange"] = senderProfile?.AgeRange ?? "",
-                ["message"]           = "You accepted the connection request!"
+                ["type"]         = "ConnectionAccepted",
+                ["connectionId"] = connection.Id.ToString()
             },
             ct: ct);
 

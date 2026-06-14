@@ -13,3 +13,18 @@ public class NearbyUserDto
     public Guid? ExistingConnectionId { get; set; }
     public string? ExistingConnectionStatus { get; set; }
 }
+
+public class DiscoveryResultDto
+{
+    /// <summary>
+    /// Nearby users visible on the map.
+    /// </summary>
+    public List<NearbyUserDto> Users { get; set; } = [];
+
+    /// <summary>
+    /// The user ID of the person the requesting user is currently in an active
+    /// connection with (any stage: pending invitation, decision phase).
+    /// Null when there is no active connection. Use this to draw the map line.
+    /// </summary>
+    public string? ActiveConnectionUserId { get; set; }
+}

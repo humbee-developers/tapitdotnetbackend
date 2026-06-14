@@ -7,6 +7,8 @@ using TapitAI.Domain.Enums;
 namespace TapitAI.API.Controllers;
 
 [Authorize(Policy = "UserOnly")]
+[Route("api/connections")]
+[Route("api/connection")]
 public class ConnectionController : BaseApiController
 {
     private static readonly string[] RejectionSuggestions =
@@ -38,6 +40,10 @@ public class ConnectionController : BaseApiController
         "Hey! Let's make this connection worth it ✨",
         "Hi! Coffee, tea, or just great conversation? 😄"
     ];
+
+    [HttpGet("active")]
+    public async Task<IActionResult> GetActiveConnection(CancellationToken ct)
+        => Ok(await Mediator.Send(new GetActiveConnectionQuery(), ct));
 
     [HttpGet("invitations")]
     public async Task<IActionResult> GetInvitations(CancellationToken ct)
