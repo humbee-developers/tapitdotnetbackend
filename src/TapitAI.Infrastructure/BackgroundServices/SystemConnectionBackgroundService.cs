@@ -2,7 +2,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using TapitAI.Application.Common.Helpers;
 using TapitAI.Application.Common.Interfaces;
+using static TapitAI.Application.Common.Helpers.ConnectionEventPayload;
 using TapitAI.Domain.Constants;
 using TapitAI.Domain.Entities;
 using TapitAI.Domain.Enums;
@@ -44,6 +46,7 @@ public class SystemConnectionBackgroundService(
         var settings = services.GetRequiredService<IAdminSettingService>();
         var realTime = services.GetRequiredService<IRealTimeService>();
         var firebase = services.GetRequiredService<IFirebaseService>();
+        var identity = services.GetRequiredService<IIdentityService>();
 
         var connectionRadius = await settings.GetDoubleAsync(AdminSettingKeys.ConnectionRadiusMiles, 25, ct);
         var connectionLimit = await settings.GetIntAsync(AdminSettingKeys.ConnectionsPerDayLimit, 3, ct);
@@ -85,6 +88,7 @@ public class SystemConnectionBackgroundService(
 
         // Load profiles only for users who have fresh locations (not the full profiled pool)
         var profiles = await db.Set<UserDatingProfile>()
+            .Include(p => p.Photos)
             .Where(p => locationUserIds.Contains(p.UserId))
             .ToListAsync(ct);
 
@@ -221,35 +225,32 @@ public class SystemConnectionBackgroundService(
                 alreadyPaired.Add(senderLocation.UserId);
                 alreadyPaired.Add(receiverLocation.UserId);
 
-                var senderGenderStr = senderProfile.Gender ?? "MALE";
-                var senderPlaceholderPhotoUrl = GetPlaceholder(placeholders, senderGenderStr);
-                var senderMaskedName = MaskName(senderProfile.DisplayName);
+                var idMap = await identity.ResolveInternalUserIdsAsync(
+                    [senderLocation.UserId, receiverLocation.UserId], ct);
+                var senderInternalId   = idMap.GetValueOrDefault(senderLocation.UserId,   senderLocation.UserId);
+                var receiverInternalId = idMap.GetValueOrDefault(receiverLocation.UserId, receiverLocation.UserId);
 
-                var receiverGenderStr = receiverProfile.Gender ?? "MALE";
-                var receiverPlaceholderPhotoUrl = GetPlaceholder(placeholders, receiverGenderStr);
+                var senderPhotoUrl   = senderProfile.Photos.FirstOrDefault(ph => ph.IsPrimary)?.PublicUrl;
+                var receiverPhotoUrl = receiverProfile.Photos.FirstOrDefault(ph => ph.IsPrimary)?.PublicUrl;
+
+                var eventProfiles = new ConnectionEventProfiles(
+                    SenderDisplayName:           senderProfile.DisplayName,
+                    SenderPhotoUrl:              senderPhotoUrl,
+                    SenderPlaceholderPhotoUrl:   ConnectionEventPayload.GetPlaceholder(placeholders, senderProfile.Gender ?? "MALE",   senderLocation.UserId),
+                    ReceiverDisplayName:         receiverProfile.DisplayName,
+                    ReceiverPhotoUrl:            receiverPhotoUrl,
+                    ReceiverPlaceholderPhotoUrl: ConnectionEventPayload.GetPlaceholder(placeholders, receiverProfile.Gender ?? "MALE", receiverLocation.UserId)
+                );
+
+                var payload = ConnectionEventPayload.Build(connection, senderInternalId, receiverInternalId, eventProfiles);
 
                 // Step 1 of 2: show invitation popup to both users.
                 // Receiver must Accept/Reject. Sender sees "invitation sent" state.
                 // Step 2 (decision phase) begins only after receiver accepts.
-                await realTime.SendToUserAsync(receiverLocation.UserId, HubEvents.ConnectionRequestReceived, new
-                {
-                    ConnectionId = connection.Id,
-                    SenderMaskedName = senderMaskedName,
-                    SenderAgeRange = senderProfile.AgeRange,
-                    SenderGender = senderGenderStr,
-                    SenderPlaceholderPhotoUrl = senderPlaceholderPhotoUrl,
-                    Message = message,
-                    InitiatedVia = "System",
-                    ExpiresAt = connection.ExpiresAt
-                }, ct);
+                await realTime.SendToUserAsync(receiverLocation.UserId, HubEvents.ConnectionRequestReceived, payload, ct);
+                await realTime.SendToUserAsync(senderLocation.UserId,   HubEvents.ConnectionRequestSent,     payload, ct);
 
-                await realTime.SendToUserAsync(senderLocation.UserId, HubEvents.ConnectionRequestSent, new
-                {
-                    ConnectionId = connection.Id,
-                    ReceiverMaskedName = MaskName(receiverProfile.DisplayName),
-                    ReceiverPlaceholderPhotoUrl = receiverPlaceholderPhotoUrl,
-                    ExpiresAt = connection.ExpiresAt
-                }, ct);
+                var senderMaskedName = ConnectionEventPayload.MaskName(senderProfile.DisplayName) ?? "Someone";
 
                 await firebase.SendToUserAsync(receiverLocation.UserId,
                     title: "New Connection Request",
@@ -294,21 +295,6 @@ public class SystemConnectionBackgroundService(
         return R * 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
     }
 
-    private static string? GetPlaceholder(List<PlaceholderPhoto> placeholders, string gender)
-    {
-        var match = placeholders.FirstOrDefault(p =>
-            string.Equals(p.Gender, gender, StringComparison.OrdinalIgnoreCase));
-        return (match ?? placeholders.FirstOrDefault())?.PhotoUrl;
-    }
-
-    private static string MaskName(string name)
-    {
-        if (string.IsNullOrWhiteSpace(name)) return name;
-        var chars = name.ToCharArray();
-        for (var i = 1; i < chars.Length; i += 2)
-            if (chars[i] != ' ') chars[i] = '*';
-        return new string(chars);
-    }
 }
 
 file static class PickupLineProvider

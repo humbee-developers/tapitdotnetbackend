@@ -28,16 +28,6 @@ builder.Services.AddCors(options =>
         policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
 });
 
-builder.Services.AddHttpLogging(logging =>
-{
-    logging.LoggingFields = Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.RequestPath
-        | Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.RequestMethod
-        | Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.RequestBody
-        | Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.ResponseStatusCode
-        | Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.ResponseBody;
-    logging.RequestBodyLogLimit = 4096;
-    logging.ResponseBodyLogLimit = 4096;
-});
 
 // ── App Pipeline ───────────────────────────────────────────────────────────────
 var app = builder.Build();
@@ -54,7 +44,6 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-app.UseHttpLogging();
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 if (!app.Environment.IsDevelopment())
     app.UseHttpsRedirection();

@@ -60,7 +60,13 @@
       "PowerShell(Stop-Process -Id 38948 -Force -ErrorAction SilentlyContinue)",
       "PowerShell(Stop-Process -Name \"TapitAI.API\" -Force -ErrorAction SilentlyContinue)",
       "PowerShell(dotnet build \"e:\\\\Humbee Studio\\\\Clients\\\\VagKap\\\\tapitAI\\\\dotnetbackend\\\\src\\\\TapitAI.Infrastructure\" 2>&1)",
-      "PowerShell(dotnet build \"e:\\\\Humbee Studio\\\\Clients\\\\VagKap\\\\tapitAI\\\\dotnetbackend\\\\src\\\\TapitAI.Application\" 2>&1)"
+      "PowerShell(dotnet build \"e:\\\\Humbee Studio\\\\Clients\\\\VagKap\\\\tapitAI\\\\dotnetbackend\\\\src\\\\TapitAI.Application\" 2>&1)",
+      "PowerShell(Get-Process -Name \"TapitAI.API\" -ErrorAction SilentlyContinue)",
+      "PowerShell(Stop-Process -Id 36528 -Force)",
+      "PowerShell(Start-Process -FilePath \"dotnet\" -ArgumentList \"run --project src/TapitAI.API/TapitAI.API.csproj\" -WorkingDirectory \"e:\\\\Humbee Studio\\\\Clients\\\\VagKap\\\\tapitAI\\\\dotnetbackend\" -WindowStyle Normal)",
+      "PowerShell(Stop-Process -Force)",
+      "PowerShell(cd \"e:\\\\Humbee Studio\\\\Clients\\\\VagKap\\\\tapitAI\\\\dotnetbackend\"; dotnet build src/TapitAI.API/TapitAI.API.csproj -c Debug --no-restore 2>&1 | Where-Object { $_ -match \"error\" } | Select-Object -First 20)",
+      "PowerShell(Get-Process -Name \"TapitAI.API\" -ErrorAction SilentlyContinue | Stop-Process -Force; Start-Sleep -Milliseconds 800; cd \"e:\\\\Humbee Studio\\\\Clients\\\\VagKap\\\\tapitAI\\\\dotnetbackend\"; dotnet build src/TapitAI.Application/TapitAI.Application.csproj src/TapitAI.Infrastructure/TapitAI.Infrastructure.csproj -c Debug --no-restore 2>&1 | Where-Object { $_ -match \"error CS|Build succeeded|Error\\\\\\(s\\\\\\)\" } | Select-Object -Last 5)"
     ],
     "additionalDirectories": [
       "C:\\Users\\Patel\\.claude\\projects\\e--Humbee-Studio-Clients-VagKap-tapitAI-dotnetbackend"

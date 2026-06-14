@@ -10,5 +10,6 @@ public static class HubEvents
     public const string ConnectionPassed = "ConnectionPassed";
     public const string WaitingForPartner = "WaitingForPartner";
     public const string ChatStarted = "ChatStarted";
+    public const string ConnectionExpired = "ConnectionExpired";
     public const string TapStatusChanged = "TapStatusChanged";
 }

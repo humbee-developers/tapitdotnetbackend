@@ -2,7 +2,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using TapitAI.Application.Common.Helpers;
 using TapitAI.Application.Common.Interfaces;
+using static TapitAI.Application.Common.Helpers.ConnectionEventPayload;
 using TapitAI.Domain.Constants;
 using TapitAI.Domain.Entities;
 using TapitAI.Domain.Enums;
@@ -30,6 +32,7 @@ public class ConnectionExpiryBackgroundService(IServiceScopeFactory scopeFactory
             using var scope = scopeFactory.CreateScope();
             var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
             var realTime = scope.ServiceProvider.GetRequiredService<IRealTimeService>();
+            var identity = scope.ServiceProvider.GetRequiredService<IIdentityService>();
             var settings = scope.ServiceProvider.GetRequiredService<IAdminSettingService>();
 
             var expiryMinutes = await settings.GetIntAsync(AdminSettingKeys.ConnectionExpiryMinutes, 30, ct);
@@ -45,12 +48,44 @@ public class ConnectionExpiryBackgroundService(IServiceScopeFactory scopeFactory
                         && c.AcceptedAt.Value.AddMinutes(expiryMinutes) <= cutoff))
                 .ToListAsync(ct);
 
+            // Batch-resolve all Auth0 subs to internal UUIDs in one query.
+            var allUserIds = toExpire.SelectMany(c => new[] { c.SenderUserId, c.ReceiverUserId }).Distinct().ToList();
+            var idMap = await identity.ResolveInternalUserIdsAsync(allUserIds, ct);
+
+            // Batch-load profiles + photos for all participants.
+            var profileMap = (await db.Set<Domain.Entities.UserDatingProfile>()
+                .Include(p => p.Photos)
+                .Where(p => allUserIds.Contains(p.UserId))
+                .ToListAsync(ct))
+                .ToDictionary(p => p.UserId);
+
+            var placeholders = await db.Set<Domain.Entities.PlaceholderPhoto>()
+                .Where(pp => pp.IsActive)
+                .ToListAsync(ct);
+
             foreach (var conn in toExpire)
             {
                 conn.Expire();
-                await realTime.SendToUsersAsync(
-                    new[] { conn.SenderUserId, conn.ReceiverUserId },
-                    "ConnectionExpired", new { ConnectionId = conn.Id, Message = "This connection has expired." }, ct);
+
+                var senderInternalId   = idMap.GetValueOrDefault(conn.SenderUserId,   conn.SenderUserId);
+                var receiverInternalId = idMap.GetValueOrDefault(conn.ReceiverUserId, conn.ReceiverUserId);
+
+                profileMap.TryGetValue(conn.SenderUserId,   out var sp);
+                profileMap.TryGetValue(conn.ReceiverUserId, out var rp);
+
+                var eventProfiles = new ConnectionEventProfiles(
+                    SenderDisplayName:           sp?.DisplayName,
+                    SenderPhotoUrl:              sp?.Photos.FirstOrDefault(ph => ph.IsPrimary)?.PublicUrl,
+                    SenderPlaceholderPhotoUrl:   GetPlaceholder(placeholders, sp?.Gender ?? "MALE",   conn.SenderUserId),
+                    ReceiverDisplayName:         rp?.DisplayName,
+                    ReceiverPhotoUrl:            rp?.Photos.FirstOrDefault(ph => ph.IsPrimary)?.PublicUrl,
+                    ReceiverPlaceholderPhotoUrl: GetPlaceholder(placeholders, rp?.Gender ?? "MALE", conn.ReceiverUserId)
+                );
+
+                var payload = ConnectionEventPayload.Build(conn, senderInternalId, receiverInternalId, eventProfiles);
+
+                await realTime.SendToUserAsync(conn.SenderUserId,   HubEvents.ConnectionExpired, payload, ct);
+                await realTime.SendToUserAsync(conn.ReceiverUserId, HubEvents.ConnectionExpired, payload, ct);
             }
 
             if (toExpire.Count > 0)

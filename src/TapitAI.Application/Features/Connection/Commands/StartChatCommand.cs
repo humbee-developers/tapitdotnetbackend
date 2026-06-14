@@ -1,10 +1,9 @@
 using MediatR;
-using Microsoft.EntityFrameworkCore;
+using TapitAI.Application.Common.Helpers;
 using TapitAI.Application.Common.Interfaces;
 using TapitAI.Application.Common.Models;
 using TapitAI.Application.DTOs.Dating;
 using TapitAI.Domain.Constants;
-using TapitAI.Domain.Entities;
 using TapitAI.Domain.Exceptions;
 using TapitAI.Domain.Interfaces.Repositories;
 using TapitAI.Domain.Interfaces.Services;
@@ -16,6 +15,7 @@ public record StartChatCommand(Guid ConnectionId, string? Message) : IRequest<Re
 public class StartChatCommandHandler(
     IUnitOfWork uow,
     ICurrentUserService currentUser,
+    IIdentityService identity,
     IRealTimeService realTime,
     IFirebaseService firebase,
     IChatService chatService)
@@ -44,6 +44,13 @@ public class StartChatCommandHandler(
 
         string? chatChannelId = null;
 
+        var idMap = await identity.ResolveInternalUserIdsAsync(
+            [connection.SenderUserId, connection.ReceiverUserId], ct);
+        var senderInternalId   = idMap.GetValueOrDefault(connection.SenderUserId,   connection.SenderUserId);
+        var receiverInternalId = idMap.GetValueOrDefault(connection.ReceiverUserId, connection.ReceiverUserId);
+
+        var profiles = await ConnectionEventPayload.LoadProfilesAsync(connection, uow, ct);
+
         if (connection.IsBothConnected())
         {
             var channelId = $"connection-{connection.Id}";
@@ -54,7 +61,6 @@ public class StartChatCommandHandler(
             connection.SetChatChannel(channelId);
             chatChannelId = channelId;
 
-            // Replay the messages exchanged before the chat opened, in chronological order
             var historicalMessages = new[]
             {
                 (connection.SenderUserId,   connection.SenderInvitationMessage),
@@ -66,24 +72,14 @@ public class StartChatCommandHandler(
                 if (!string.IsNullOrWhiteSpace(text))
                     await chatService.SendMessageAsync(channelId, "messaging", msgUserId, text, ct);
 
-            var senderProfile = await uow.Repository<UserDatingProfile>().Query()
-                .FirstOrDefaultAsync(p => p.UserId == connection.SenderUserId, ct);
-            var receiverProfile = await uow.Repository<UserDatingProfile>().Query()
-                .FirstOrDefaultAsync(p => p.UserId == connection.ReceiverUserId, ct);
+            var payload = ConnectionEventPayload.Build(connection, senderInternalId, receiverInternalId, profiles);
 
-            await realTime.SendToUsersAsync(
-                new[] { connection.SenderUserId, connection.ReceiverUserId },
-                HubEvents.ChatStarted, new
-                {
-                    ConnectionId = connection.Id,
-                    ChatChannelId = channelId,
-                    SenderConnectionMessage = connection.SenderConnectionMessage,
-                    ReceiverConnectionMessage = connection.ReceiverConnectionMessage
-                }, ct);
+            await realTime.SendToUserAsync(connection.SenderUserId,   HubEvents.ChatStarted, payload, ct);
+            await realTime.SendToUserAsync(connection.ReceiverUserId, HubEvents.ChatStarted, payload, ct);
 
             var matchName = (currentUser.UserId == connection.SenderUserId
-                ? senderProfile?.DisplayName
-                : receiverProfile?.DisplayName) ?? "Your match";
+                ? profiles.SenderDisplayName
+                : profiles.ReceiverDisplayName) ?? "Your match";
 
             await firebase.SendToUserAsync(otherUserId,
                 title: "Let's Chat!",
@@ -98,18 +94,16 @@ public class StartChatCommandHandler(
         }
         else
         {
-            var myProfile = await uow.Repository<UserDatingProfile>().Query()
-                .FirstOrDefaultAsync(p => p.UserId == currentUser.UserId, ct);
+            var payload = ConnectionEventPayload.Build(connection, senderInternalId, receiverInternalId, profiles);
 
-            await realTime.SendToUserAsync(otherUserId, HubEvents.WaitingForPartner, new
-            {
-                ConnectionId = connection.Id,
-                Message = cmd.Message,
-                FromUserName = myProfile?.DisplayName ?? "Your match"
-            }, ct);
+            await realTime.SendToUserAsync(otherUserId, HubEvents.WaitingForPartner, payload, ct);
+
+            var myDisplayName = (currentUser.UserId == connection.SenderUserId
+                ? profiles.SenderDisplayName
+                : profiles.ReceiverDisplayName) ?? "Your match";
 
             await firebase.SendToUserAsync(otherUserId,
-                title: $"{myProfile?.DisplayName ?? "Your match"} wants to chat!",
+                title: $"{myDisplayName} wants to chat!",
                 body: cmd.Message ?? "Tap to start the conversation.",
                 data: new Dictionary<string, string>
                 {

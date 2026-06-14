@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using TapitAI.Application.Common.Interfaces;
 using TapitAI.Application.Common.Models;
 using TapitAI.Application.DTOs.Users;
@@ -106,6 +107,34 @@ public class IdentityService(
         var user = await userManager.FindByIdAsync(userId);
         if (user is null) return [];
         return await userManager.GetRolesAsync(user);
+    }
+
+    public async Task<string?> ResolveInternalUserIdAsync(string auth0SubOrId, CancellationToken ct = default)
+    {
+        var user = await userManager.Users
+            .AsNoTracking()
+            .FirstOrDefaultAsync(u => u.Auth0UserId == auth0SubOrId || u.Id == auth0SubOrId, ct);
+        return user?.Id;
+    }
+
+    public async Task<Dictionary<string, string>> ResolveInternalUserIdsAsync(IEnumerable<string> auth0SubsOrIds, CancellationToken ct = default)
+    {
+        var ids = auth0SubsOrIds.Distinct().ToList();
+        var users = await userManager.Users
+            .AsNoTracking()
+            .Where(u => ids.Contains(u.Auth0UserId!) || ids.Contains(u.Id))
+            .Select(u => new { u.Id, u.Auth0UserId })
+            .ToListAsync(ct);
+
+        var map = new Dictionary<string, string>();
+        foreach (var u in users)
+        {
+            if (u.Auth0UserId is not null && ids.Contains(u.Auth0UserId))
+                map[u.Auth0UserId] = u.Id;
+            if (ids.Contains(u.Id))
+                map[u.Id] = u.Id;
+        }
+        return map;
     }
 
     private static UserDto MapToDto(ApplicationUser user, IEnumerable<string> roles)

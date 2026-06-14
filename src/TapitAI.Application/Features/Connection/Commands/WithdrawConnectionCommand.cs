@@ -1,4 +1,5 @@
 using MediatR;
+using TapitAI.Application.Common.Helpers;
 using TapitAI.Application.Common.Interfaces;
 using TapitAI.Application.Common.Models;
 using TapitAI.Application.DTOs.Dating;
@@ -12,7 +13,7 @@ namespace TapitAI.Application.Features.Connection.Commands;
 public record WithdrawConnectionCommand(Guid ConnectionId) : IRequest<Result<ConnectionActionResultDto>>;
 
 public class WithdrawConnectionCommandHandler(
-    IUnitOfWork uow, ICurrentUserService currentUser, IRealTimeService realTime)
+    IUnitOfWork uow, ICurrentUserService currentUser, IIdentityService identity, IRealTimeService realTime)
     : IRequestHandler<WithdrawConnectionCommand, Result<ConnectionActionResultDto>>
 {
     public async Task<Result<ConnectionActionResultDto>> Handle(WithdrawConnectionCommand cmd, CancellationToken ct)
@@ -26,11 +27,15 @@ public class WithdrawConnectionCommandHandler(
         connection.Withdraw();
         await uow.SaveChangesAsync(ct);
 
-        await realTime.SendToUserAsync(connection.ReceiverUserId, HubEvents.ConnectionWithdrawn, new
-        {
-            ConnectionId = connection.Id,
-            Message = "The sender has withdrawn the connection request."
-        }, ct);
+        var idMap = await identity.ResolveInternalUserIdsAsync(
+            [connection.SenderUserId, connection.ReceiverUserId], ct);
+        var senderInternalId   = idMap.GetValueOrDefault(connection.SenderUserId,   connection.SenderUserId);
+        var receiverInternalId = idMap.GetValueOrDefault(connection.ReceiverUserId, connection.ReceiverUserId);
+
+        var profiles = await ConnectionEventPayload.LoadProfilesAsync(connection, uow, ct);
+        var payload  = ConnectionEventPayload.Build(connection, senderInternalId, receiverInternalId, profiles);
+
+        await realTime.SendToUserAsync(connection.ReceiverUserId, HubEvents.ConnectionWithdrawn, payload, ct);
 
         return Result<ConnectionActionResultDto>.Success(new ConnectionActionResultDto
         {
