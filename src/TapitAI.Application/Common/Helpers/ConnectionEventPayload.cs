@@ -15,12 +15,30 @@ public record ConnectionEventProfiles(
 
 public static class ConnectionEventPayload
 {
+    /// <summary>
+    /// Builds the unified event payload.
+    /// <para>
+    /// When <paramref name="viewerInternalId"/> is provided the payload also includes
+    /// pre-resolved <c>OtherUser*</c> convenience fields so the mobile never has to
+    /// do role detection — it just reads <c>otherUserDisplayName</c>, etc.
+    /// </para>
+    /// </summary>
     public static object Build(
         Connection c,
         string senderInternalId,
         string receiverInternalId,
-        ConnectionEventProfiles? profiles = null)
-        => new
+        ConnectionEventProfiles? profiles = null,
+        string? viewerInternalId = null)
+    {
+        var viewerIsSender = viewerInternalId == null || viewerInternalId == senderInternalId;
+
+        var otherDisplayName        = viewerIsSender ? profiles?.ReceiverDisplayName         : profiles?.SenderDisplayName;
+        var otherPhotoUrl           = viewerIsSender ? profiles?.ReceiverPhotoUrl            : profiles?.SenderPhotoUrl;
+        var otherMaskedName         = viewerIsSender ? MaskName(profiles?.ReceiverDisplayName) : MaskName(profiles?.SenderDisplayName);
+        var otherPlaceholderPhotoUrl = viewerIsSender ? profiles?.ReceiverPlaceholderPhotoUrl : profiles?.SenderPlaceholderPhotoUrl;
+        var otherUserId             = viewerIsSender ? receiverInternalId                    : senderInternalId;
+
+        return new
         {
             ConnectionId              = c.Id,
             SenderUserId              = senderInternalId,
@@ -40,20 +58,27 @@ public static class ConnectionEventPayload
             AcceptedAt                = c.AcceptedAt,
             ConnectedAt               = c.ConnectedAt,
             ExpiresAt                 = c.ExpiresAt,
-            // Identity fields — masked until accepted, real after accepted
-            SenderMaskedName          = MaskName(profiles?.SenderDisplayName),
-            SenderDisplayName         = profiles?.SenderDisplayName,
-            SenderPhotoUrl            = profiles?.SenderPhotoUrl,
-            SenderPlaceholderPhotoUrl = profiles?.SenderPlaceholderPhotoUrl,
-            ReceiverMaskedName        = MaskName(profiles?.ReceiverDisplayName),
-            ReceiverDisplayName       = profiles?.ReceiverDisplayName,
-            ReceiverPhotoUrl          = profiles?.ReceiverPhotoUrl,
-            ReceiverPlaceholderPhotoUrl = profiles?.ReceiverPlaceholderPhotoUrl
+            // Per-user identity fields (sender / receiver perspective)
+            SenderMaskedName            = MaskName(profiles?.SenderDisplayName),
+            SenderDisplayName           = profiles?.SenderDisplayName,
+            SenderPhotoUrl              = profiles?.SenderPhotoUrl,
+            SenderPlaceholderPhotoUrl   = profiles?.SenderPlaceholderPhotoUrl,
+            ReceiverMaskedName          = MaskName(profiles?.ReceiverDisplayName),
+            ReceiverDisplayName         = profiles?.ReceiverDisplayName,
+            ReceiverPhotoUrl            = profiles?.ReceiverPhotoUrl,
+            ReceiverPlaceholderPhotoUrl = profiles?.ReceiverPlaceholderPhotoUrl,
+            // Pre-resolved "other user" fields — relative to the specific recipient.
+            // The mobile reads these directly without needing to compare UUIDs.
+            OtherUserId              = otherUserId,
+            OtherUserDisplayName     = otherDisplayName,
+            OtherUserMaskedName      = otherMaskedName,
+            OtherUserPhotoUrl        = otherPhotoUrl,
+            OtherUserPlaceholderPhotoUrl = otherPlaceholderPhotoUrl
         };
+    }
 
     /// <summary>
     /// Loads sender + receiver profiles (with photos) and placeholder photos in 3 queries.
-    /// Call this from Application-layer command handlers.
     /// </summary>
     public static async Task<ConnectionEventProfiles> LoadProfilesAsync(
         Connection connection,
@@ -73,11 +98,11 @@ public static class ConnectionEventPayload
             .ToListAsync(ct);
 
         return new ConnectionEventProfiles(
-            SenderDisplayName:          senderProfile?.DisplayName,
-            SenderPhotoUrl:             senderProfile?.Photos.FirstOrDefault(ph => ph.IsPrimary)?.PublicUrl,
-            SenderPlaceholderPhotoUrl:  GetPlaceholder(placeholders, senderProfile?.Gender ?? "MALE", connection.SenderUserId),
-            ReceiverDisplayName:        receiverProfile?.DisplayName,
-            ReceiverPhotoUrl:           receiverProfile?.Photos.FirstOrDefault(ph => ph.IsPrimary)?.PublicUrl,
+            SenderDisplayName:           senderProfile?.DisplayName,
+            SenderPhotoUrl:              senderProfile?.Photos.FirstOrDefault(ph => ph.IsPrimary)?.PublicUrl,
+            SenderPlaceholderPhotoUrl:   GetPlaceholder(placeholders, senderProfile?.Gender ?? "MALE",   connection.SenderUserId),
+            ReceiverDisplayName:         receiverProfile?.DisplayName,
+            ReceiverPhotoUrl:            receiverProfile?.Photos.FirstOrDefault(ph => ph.IsPrimary)?.PublicUrl,
             ReceiverPlaceholderPhotoUrl: GetPlaceholder(placeholders, receiverProfile?.Gender ?? "MALE", connection.ReceiverUserId)
         );
     }
@@ -91,7 +116,7 @@ public static class ConnectionEventPayload
                 .Select(w => (w.Length >= 2 ? w[..2] : w) + ".."));
     }
 
-    // Deterministic placeholder by gender + userId hash so it never flickers.
+    // Deterministic placeholder by gender + userId hash — never flickers.
     public static string? GetPlaceholder(List<PlaceholderPhoto> placeholders, string gender, string userId)
     {
         var matches = placeholders.Where(p => p.Gender.Equals(gender, StringComparison.OrdinalIgnoreCase)).ToList();

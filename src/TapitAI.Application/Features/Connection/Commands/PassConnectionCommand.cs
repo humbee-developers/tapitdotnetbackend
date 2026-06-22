@@ -50,9 +50,11 @@ public class PassConnectionCommandHandler(
         var receiverInternalId = idMap.GetValueOrDefault(connection.ReceiverUserId, connection.ReceiverUserId);
 
         var profiles = await ConnectionEventPayload.LoadProfilesAsync(connection, uow, ct);
-        var payload  = ConnectionEventPayload.Build(connection, senderInternalId, receiverInternalId, profiles);
 
-        await realTime.SendToUserAsync(otherUserId, HubEvents.ConnectionPassed, payload, ct);
+        // Passed event goes to the other participant — viewerInternalId resolves their otherUser correctly
+        var viewerInternalId = otherUserId == connection.SenderUserId ? senderInternalId : receiverInternalId;
+        await realTime.SendToUserAsync(otherUserId, HubEvents.ConnectionPassed,
+            ConnectionEventPayload.Build(connection, senderInternalId, receiverInternalId, profiles, viewerInternalId), ct);
 
         await firebase.SendToUserAsync(otherUserId,
             title: "Your match passed",
