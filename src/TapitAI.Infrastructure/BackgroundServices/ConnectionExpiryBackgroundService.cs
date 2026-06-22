@@ -82,10 +82,11 @@ public class ConnectionExpiryBackgroundService(IServiceScopeFactory scopeFactory
                     ReceiverPlaceholderPhotoUrl: GetPlaceholder(placeholders, rp?.Gender ?? "MALE", conn.ReceiverUserId)
                 );
 
-                var payload = ConnectionEventPayload.Build(conn, senderInternalId, receiverInternalId, eventProfiles);
+                await realTime.SendToUserAsync(conn.SenderUserId, HubEvents.ConnectionExpired,
+                    ConnectionEventPayload.Build(conn, senderInternalId, receiverInternalId, eventProfiles, senderInternalId), ct);
 
-                await realTime.SendToUserAsync(conn.SenderUserId,   HubEvents.ConnectionExpired, payload, ct);
-                await realTime.SendToUserAsync(conn.ReceiverUserId, HubEvents.ConnectionExpired, payload, ct);
+                await realTime.SendToUserAsync(conn.ReceiverUserId, HubEvents.ConnectionExpired,
+                    ConnectionEventPayload.Build(conn, senderInternalId, receiverInternalId, eventProfiles, receiverInternalId), ct);
             }
 
             if (toExpire.Count > 0)

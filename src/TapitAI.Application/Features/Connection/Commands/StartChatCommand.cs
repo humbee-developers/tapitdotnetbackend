@@ -54,12 +54,18 @@ public class StartChatCommandHandler(
         if (connection.IsBothConnected())
         {
             var channelId = $"connection-{connection.Id}";
+
+            // Create the GetStream channel first — fully awaited before we touch anything else.
             await chatService.CreateChannelAsync(
                 channelId, "messaging", $"connection-{connection.Id}",
                 new[] { connection.SenderUserId, connection.ReceiverUserId }, ct);
 
             connection.SetChatChannel(channelId);
             chatChannelId = channelId;
+
+            // Persist to DB before firing events so the channel ID is durable
+            // and GetStream's write has fully landed before the client opens it.
+            await uow.SaveChangesAsync(ct);
 
             var historicalMessages = new[]
             {
@@ -72,10 +78,15 @@ public class StartChatCommandHandler(
                 if (!string.IsNullOrWhiteSpace(text))
                     await chatService.SendMessageAsync(channelId, "messaging", msgUserId, text, ct);
 
-            var payload = ConnectionEventPayload.Build(connection, senderInternalId, receiverInternalId, profiles);
+            // Guard: never fire ChatStarted without a channel ID.
+            if (string.IsNullOrEmpty(connection.ChatChannelId))
+                throw new InvalidOperationException("ChatChannelId must be set before firing ChatStarted.");
 
-            await realTime.SendToUserAsync(connection.SenderUserId,   HubEvents.ChatStarted, payload, ct);
-            await realTime.SendToUserAsync(connection.ReceiverUserId, HubEvents.ChatStarted, payload, ct);
+            await realTime.SendToUserAsync(connection.SenderUserId, HubEvents.ChatStarted,
+                ConnectionEventPayload.Build(connection, senderInternalId, receiverInternalId, profiles, senderInternalId), ct);
+
+            await realTime.SendToUserAsync(connection.ReceiverUserId, HubEvents.ChatStarted,
+                ConnectionEventPayload.Build(connection, senderInternalId, receiverInternalId, profiles, receiverInternalId), ct);
 
             var matchName = (currentUser.UserId == connection.SenderUserId
                 ? profiles.SenderDisplayName
@@ -94,9 +105,12 @@ public class StartChatCommandHandler(
         }
         else
         {
-            var payload = ConnectionEventPayload.Build(connection, senderInternalId, receiverInternalId, profiles);
+            // Persist the partial connect status so the other user's call sees it.
+            await uow.SaveChangesAsync(ct);
 
-            await realTime.SendToUserAsync(otherUserId, HubEvents.WaitingForPartner, payload, ct);
+            var waitingViewerId = otherUserId == connection.SenderUserId ? senderInternalId : receiverInternalId;
+            await realTime.SendToUserAsync(otherUserId, HubEvents.WaitingForPartner,
+                ConnectionEventPayload.Build(connection, senderInternalId, receiverInternalId, profiles, waitingViewerId), ct);
 
             var myDisplayName = (currentUser.UserId == connection.SenderUserId
                 ? profiles.SenderDisplayName
@@ -113,8 +127,6 @@ public class StartChatCommandHandler(
                 },
                 ct: ct);
         }
-
-        await uow.SaveChangesAsync(ct);
 
         return Result<ConnectionActionResultDto>.Success(new ConnectionActionResultDto
         {

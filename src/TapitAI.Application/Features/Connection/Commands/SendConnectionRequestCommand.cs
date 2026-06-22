@@ -112,10 +112,12 @@ public class SendConnectionRequestCommandHandler(
         var receiverInternalId = idMap.GetValueOrDefault(receiverId, receiverId);
 
         var profiles = await ConnectionEventPayload.LoadProfilesAsync(connection, uow, ct);
-        var payload  = ConnectionEventPayload.Build(connection, senderInternalId, receiverInternalId, profiles);
 
-        await realTime.SendToUserAsync(receiverId, HubEvents.ConnectionRequestReceived, payload, ct);
-        await realTime.SendToUserAsync(senderId,   HubEvents.ConnectionRequestSent,     payload, ct);
+        await realTime.SendToUserAsync(receiverId, HubEvents.ConnectionRequestReceived,
+            ConnectionEventPayload.Build(connection, senderInternalId, receiverInternalId, profiles, receiverInternalId), ct);
+
+        await realTime.SendToUserAsync(senderId, HubEvents.ConnectionRequestSent,
+            ConnectionEventPayload.Build(connection, senderInternalId, receiverInternalId, profiles, senderInternalId), ct);
 
         var senderMaskedName = ConnectionEventPayload.MaskName(profiles.SenderDisplayName) ?? "Someone";
 

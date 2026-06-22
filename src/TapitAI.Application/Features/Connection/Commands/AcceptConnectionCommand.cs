@@ -34,10 +34,12 @@ public class AcceptConnectionCommandHandler(
         var receiverInternalId = idMap.GetValueOrDefault(connection.ReceiverUserId, connection.ReceiverUserId);
 
         var profiles = await ConnectionEventPayload.LoadProfilesAsync(connection, uow, ct);
-        var payload  = ConnectionEventPayload.Build(connection, senderInternalId, receiverInternalId, profiles);
 
-        await realTime.SendToUserAsync(connection.SenderUserId,   HubEvents.ConnectionAccepted, payload, ct);
-        await realTime.SendToUserAsync(connection.ReceiverUserId, HubEvents.ConnectionAccepted, payload, ct);
+        await realTime.SendToUserAsync(connection.SenderUserId, HubEvents.ConnectionAccepted,
+            ConnectionEventPayload.Build(connection, senderInternalId, receiverInternalId, profiles, senderInternalId), ct);
+
+        await realTime.SendToUserAsync(connection.ReceiverUserId, HubEvents.ConnectionAccepted,
+            ConnectionEventPayload.Build(connection, senderInternalId, receiverInternalId, profiles, receiverInternalId), ct);
 
         await firebase.SendToUserAsync(connection.SenderUserId,
             title: "Connection Accepted!",

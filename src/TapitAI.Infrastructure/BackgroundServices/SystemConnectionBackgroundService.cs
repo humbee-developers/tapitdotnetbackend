@@ -242,13 +242,14 @@ public class SystemConnectionBackgroundService(
                     ReceiverPlaceholderPhotoUrl: ConnectionEventPayload.GetPlaceholder(placeholders, receiverProfile.Gender ?? "MALE", receiverLocation.UserId)
                 );
 
-                var payload = ConnectionEventPayload.Build(connection, senderInternalId, receiverInternalId, eventProfiles);
-
                 // Step 1 of 2: show invitation popup to both users.
                 // Receiver must Accept/Reject. Sender sees "invitation sent" state.
                 // Step 2 (decision phase) begins only after receiver accepts.
-                await realTime.SendToUserAsync(receiverLocation.UserId, HubEvents.ConnectionRequestReceived, payload, ct);
-                await realTime.SendToUserAsync(senderLocation.UserId,   HubEvents.ConnectionRequestSent,     payload, ct);
+                await realTime.SendToUserAsync(receiverLocation.UserId, HubEvents.ConnectionRequestReceived,
+                    ConnectionEventPayload.Build(connection, senderInternalId, receiverInternalId, eventProfiles, receiverInternalId), ct);
+
+                await realTime.SendToUserAsync(senderLocation.UserId, HubEvents.ConnectionRequestSent,
+                    ConnectionEventPayload.Build(connection, senderInternalId, receiverInternalId, eventProfiles, senderInternalId), ct);
 
                 var senderMaskedName = ConnectionEventPayload.MaskName(senderProfile.DisplayName) ?? "Someone";
 

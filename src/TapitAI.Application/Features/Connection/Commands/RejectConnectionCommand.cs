@@ -38,9 +38,10 @@ public class RejectConnectionCommandHandler(
         var receiverInternalId = idMap.GetValueOrDefault(connection.ReceiverUserId, connection.ReceiverUserId);
 
         var profiles = await ConnectionEventPayload.LoadProfilesAsync(connection, uow, ct);
-        var payload  = ConnectionEventPayload.Build(connection, senderInternalId, receiverInternalId, profiles);
 
-        await realTime.SendToUserAsync(connection.SenderUserId, HubEvents.ConnectionRejected, payload, ct);
+        // Rejected event goes to the sender — otherUser = receiver (who rejected)
+        await realTime.SendToUserAsync(connection.SenderUserId, HubEvents.ConnectionRejected,
+            ConnectionEventPayload.Build(connection, senderInternalId, receiverInternalId, profiles, senderInternalId), ct);
 
         await firebase.SendToUserAsync(connection.SenderUserId,
             title: "Request Not Accepted",

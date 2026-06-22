@@ -33,9 +33,10 @@ public class WithdrawConnectionCommandHandler(
         var receiverInternalId = idMap.GetValueOrDefault(connection.ReceiverUserId, connection.ReceiverUserId);
 
         var profiles = await ConnectionEventPayload.LoadProfilesAsync(connection, uow, ct);
-        var payload  = ConnectionEventPayload.Build(connection, senderInternalId, receiverInternalId, profiles);
 
-        await realTime.SendToUserAsync(connection.ReceiverUserId, HubEvents.ConnectionWithdrawn, payload, ct);
+        // Withdrawn event goes to the receiver — otherUser = sender (who withdrew)
+        await realTime.SendToUserAsync(connection.ReceiverUserId, HubEvents.ConnectionWithdrawn,
+            ConnectionEventPayload.Build(connection, senderInternalId, receiverInternalId, profiles, receiverInternalId), ct);
 
         return Result<ConnectionActionResultDto>.Success(new ConnectionActionResultDto
         {
